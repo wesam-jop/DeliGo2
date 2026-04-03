@@ -1,0 +1,171 @@
+@import "tailwindcss";
+
+@theme {
+    --color-brand: #ff6214;
+    --color-brand-light: #fff0e6;
+    --color-brand-dark: #e55812;
+    --color-white: #fdfdfd;
+}
+
+/* ============================
+   FONTS
+   ============================ */
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    scroll-padding: 100px;
+
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand) transparent;
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg,
+            var(--color-brand),
+            #4f46e5);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg,
+            #6366f1,
+            #4338ca);
+}
+
+/* اختياري: عند الضغط */
+::-webkit-scrollbar-thumb:active {
+    background: #3730a3;
+}
+
+body {
+    font-family: 'Cairo', 'Inter', 'Segoe UI', sans-serif;
+    background-color: var(--color-white);
+    color: #0f172a;
+    margin: 0;
+    padding: 0;
+}
+
+/* ============================
+   UTILITY CLASSES
+   ============================ */
+
+/* Glass Morphism */
+.glass-effect {
+    background: rgba(253, 253, 253, 0.85);
+    /* Using #fdfdfd */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 98, 20, 0.1);
+    /* Using brand color for subtle border */
+}
+
+/* Premium Shadow */
+.premium-shadow {
+    box-shadow:
+        0 1px 3px rgba(255, 98, 20, 0.02),
+        0 8px 24px rgba(255, 98, 20, 0.05),
+        0 2px 4px rgba(255, 98, 20, 0.01);
+}
+
+/* Font classes */
+.font-body {
+    font-family: 'Cairo', sans-serif;
+}
+
+.font-heading {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 800;
+}
+
+/* Brand text style */
+.brand-text {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 900;
+    color: var(--color-brand);
+}
+
+/* ============================
+   SCROLLBAR HIDE
+   ============================ */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* ============================
+   LTR for OTP input
+   ============================ */
+.ltr {
+    direction: ltr;
+}
+
+/* ============================
+   ANIMATIONS
+   ============================ */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes bounce-slow {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+    animation: bounce-slow 2s ease-in-out infinite;
+}
+
+/* ============================
+   LINE CLAMP
+   ============================ */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ============================
+   GLOBAL ARABIC ADJUSTMENTS
+   ============================ */
+[dir="rtl"] {
+    letter-spacing: 0;
+    /* Arabic doesn't need letter-spacing */
+}

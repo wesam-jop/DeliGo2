@@ -1,0 +1,31 @@
+    /**
+     * Get my store working hours
+     */
+    public function myHours(): JsonResponse
+    {
+        $store = $this->storeService->getMyStore();
+        
+        if (!$store) {
+            return $this->error('لم يتم العثور على المتجر', 404);
+        }
+
+        $hours = $this->storeService->getStoreHours($store);
+
+        return $this->success([
+            'hours' => $hours,
+            'is_open_now' => $store->isOpenNow(),
+        ]);
+    }
+
+    /**
+     * Get store working hours
+     */
+    public function hours(Store $store): JsonResponse
+    {
+        $hours = $this->storeService->getStoreHours($store);
+
+        return $this->success([
+            'hours' => $hours,
+            'is_open_now' => $store->isOpenNow(),
+        ]);
+    }
