@@ -12,8 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Change status column to VARCHAR to support all statuses
-        DB::statement("ALTER TABLE order_status_history MODIFY COLUMN status VARCHAR(50)");
+        Schema::table('order_status_history', function (Blueprint $table) {
+            $table->string('status', 50)->nullable()->change();
+        });
     }
 
     /**
@@ -21,7 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert to enum if needed
-        DB::statement("ALTER TABLE order_status_history MODIFY COLUMN status ENUM('pending', 'accepted_by_driver', 'preparing', 'ready', 'picked_up', 'delivered', 'cancelled')");
+        Schema::table('order_status_history', function (Blueprint $table) {
+            $table->string('status', 50)->nullable()->change();
+        });
     }
 };
