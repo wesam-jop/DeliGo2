@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\SendBroadcastNotificationChunkJob;
 use App\Models\User;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\DB;
@@ -33,25 +34,91 @@ class NotificationService
      */
     public function sendToUser(User $user, string $title, string $message, array $options = []): bool
     {
-        $inAppSaved = $this->storeInAppNotification($user, $title, $message, $options);
-        $topic = $user->ntfy_topic;
+        $skipInApp = (bool) ($options['skip_in_app'] ?? false);
+        $skipWhatsapp = (bool) ($options['skip_whatsapp'] ?? false);
+        $skipNtfy = (bool) ($options['skip_ntfy'] ?? false);
 
-        if (!$topic) {
-            $topic = $user->generateNtfyTopic();
+        $inAppSaved = $skipInApp
+            ? false
+            : $this->storeInAppNotification($user, $title, $message, $options);
+
+        $ntfyPayload = $this->stripInternalNotificationOptions($options);
+
+        $ntfySent = false;
+        if (!$skipNtfy) {
+            $topic = $user->ntfy_topic;
+            if (!$topic) {
+                $topic = $user->generateNtfyTopic();
+            }
+            $ntfySent = $this->send($topic, $title, $message, $ntfyPayload);
         }
 
         $whatsappSent = false;
-
-        // Send WhatsApp notification
-        if ($user->phone) {
+        if (!$skipWhatsapp && $user->phone) {
             $whatsappMessage = "🔔 *{$title}*\n\n{$message}";
             $whatsappResponse = $this->whatsapp->sendMessage($user->phone, $whatsappMessage);
             $whatsappSent = (bool) ($whatsappResponse['success'] ?? false);
         }
 
-        $ntfySent = $this->send($topic, $title, $message, $options);
-
         return $inAppSaved || $ntfySent || $whatsappSent;
+    }
+
+    /**
+     * Queue broadcast notifications in chunks (for large audiences).
+     *
+     * @param  array<string, mixed>  $options  role, exclude_admin, chunk_size, skip_whatsapp, skip_ntfy, meta, click, priority
+     * @return int Number of queued chunk jobs
+     */
+    public function queueBroadcastToUsers(string $title, string $message, array $options = []): int
+    {
+        $chunkSize = (int) ($options['chunk_size'] ?? config('broadcast_reminders.chunk_size', 500));
+        $excludeAdmin = (bool) ($options['exclude_admin'] ?? true);
+
+        $query = User::query()->orderBy('id');
+
+        if ($excludeAdmin) {
+            $query->where('role', '!=', 'admin');
+        }
+
+        if (!empty($options['role'])) {
+            $query->where('role', $options['role']);
+        }
+
+        $sendOptions = array_merge([
+            'type' => 'broadcast',
+            'skip_whatsapp' => true,
+            'skip_ntfy' => false,
+        ], $options);
+
+        unset($sendOptions['role'], $sendOptions['exclude_admin'], $sendOptions['chunk_size']);
+
+        $chunks = 0;
+
+        $query->chunkById($chunkSize, function ($users) use ($title, $message, $sendOptions, &$chunks) {
+            SendBroadcastNotificationChunkJob::dispatch(
+                $users->pluck('id')->all(),
+                $title,
+                $message,
+                $sendOptions
+            );
+            $chunks++;
+        });
+
+        return $chunks;
+    }
+
+    /**
+     * @param  array<string, mixed>  $options
+     * @return array<string, mixed>
+     */
+    protected function stripInternalNotificationOptions(array $options): array
+    {
+        $internal = [
+            'type', 'meta', 'skip_in_app', 'skip_whatsapp', 'skip_ntfy',
+            'role', 'exclude_admin', 'chunk_size',
+        ];
+
+        return array_diff_key($options, array_flip($internal));
     }
 
     /**

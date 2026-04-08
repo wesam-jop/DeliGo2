@@ -15,8 +15,8 @@ import { Link } from 'react-router-dom';
 import StoreCard from '../../Components/StoreCard';
 import ProductCard from '../../Components/ProductCard';
 import { storeApi } from '../../Services/api';
-import Hero from '../../assets/images/hero.jpg';
-import Logo from '../../assets/images/logo.png';
+import Hero from '../../assets/images/hero-background-ar-7.png';
+import Logo from '../../assets/images/logo2.png';
 const FeatureCard = ({ icon: Icon, title, desc, color }) => (
     <motion.div
         whileHover={{ y: -10 }}
@@ -104,11 +104,11 @@ const Home = () => {
                     >
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-light text-brand rounded-full text-sm font-bold animate-bounce-slow">
                             <Zap size={16} fill="currentColor" />
-                            <span>توصيل سريع خلال 30 دقيقة فقط!</span>
+                            <span>أبحث عن راحتك واطلب من أفضل المطاعم والمتاجر في منطقتك</span>
                         </div>
                         <h1 className="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1]">
-                            كل ما تشتهيه <br />
-                            <span className="text-brand test italic">بين يديك</span>
+                            <p className="mb-8">كل ما تشتهيه</p>
+                            <span className="text-brand test">بين يديك</span>
                         </h1>
                         <p className="text-lg text-slate-500 max-w-lg leading-relaxed font-bold">
                             اطلب الآن من أفضل المطاعم والمتاجر في منطقتك، واستمتع بتجربة توصيل لا مثيل لها وبأمان كامل.
@@ -129,9 +129,9 @@ const Home = () => {
                         className="relative"
                     >
                         <div className="absolute inset-0 bg-brand/10 rounded-full blur-[120px]"></div>
-                        <div className="relative bg-white p-6 rounded-[3rem] premium-shadow border border-slate-50">
+                        <div className="relative bg-orange-500 p-6 rounded-[3rem] premium-shadow border border-slate-50">
                             {/* Visual Placeholder for Premium Image */}
-                            <div className="aspect-square bg-slate-100 rounded-[2.5rem] flex items-center justify-center overflow-hidden">
+                            <div className="aspect-square bg-orange-500 rounded-[2.5rem] flex items-center justify-center overflow-hidden">
                                 <ChefHat size={120} className="text-slate-300" />
                                 <img src={Hero} alt="" />
                             </div>
@@ -166,7 +166,7 @@ const Home = () => {
             <section className="container mx-auto px-6">
                 <div className="flex justify-between items-end mb-16">
                     <div>
-                        <h2 className="text-4xl font-black text-slate-900 text-right">أكثر الأكلات <span className="text-brand test italic">طلباً</span></h2>
+                        <h2 className="text-4xl font-black text-slate-900 text-right">أكثر الأكلات <span className="text-brand test">طلباً</span></h2>
                         <p className="text-slate-500 mt-2 font-bold text-right">اخترنا لك الأفضل بناءً على تقييمات العملاء.</p>
                     </div>
                     <Link to="/products" className="text-brand font-black hover:underline flex items-center gap-2">عرض الكل <ArrowRight size={18} className="rotate-180" /></Link>
@@ -206,7 +206,7 @@ const Home = () => {
                 <div className="container mx-auto px-6">
                     <div className="flex justify-between items-end mb-16 px-4">
                         <div>
-                            <h2 className="text-4xl font-black text-slate-900 test text-right">المتاجر <span className="text-brand italic">المميزة</span></h2>
+                            <h2 className="text-4xl font-black text-slate-900 test text-right">المتاجر <span className="text-brand">المميزة</span></h2>
                             <p className="text-slate-500 mt-2 font-bold text-right">نخبة من المطاعم والمتاجر التي تضمن لك الجودة والسرعة.</p>
                         </div>
                         <Link to="/stores" className="text-brand font-black hover:underline flex items-center gap-2">عرض الكل <ArrowRight size={18} className="rotate-180" /></Link>
@@ -239,7 +239,7 @@ const Home = () => {
                 <div className="text-center max-w-2xl mx-auto mb-20 space-y-4">
                     <h2 className="text-4xl font-black flex gap-2 justify-center">
                         <span>لماذا تختار </span>
-                        <span className="test text-brand ">Mishwari</span>
+                        <span className="test text-brand ">DeliGo</span>
                         <span><img src={Logo} alt="" className='w-10 h-10 rounded-full'/></span> ؟
                     </h2>
                     <p className="text-slate-500 font-bold">نحن لسنا مجرد تطبيق توصيل، نحن رفيقك الموثوق لتلبية جميع احتياجاتك اليومية بسلاسة تامة.</p>
@@ -269,7 +269,7 @@ const Home = () => {
             {/* CTA Section */}
             {/* <section className="container mx-auto px-6">
                 <div className="bg-gradient-to-br from-brand to-brand-dark rounded-[4rem] p-12 lg:p-24 text-center text-white relative overflow-hidden shadow-2xl shadow-brand/20">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -mr-32 -mt-32 uppercase tracking-tighter test font-black text-4xl p-20 select-none pointer-events-none opacity-20">Mishwari توصيل</div>
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -mr-32 -mt-32 uppercase tracking-tighter test font-black text-4xl p-20 select-none pointer-events-none opacity-20">DeliGo توصيل</div>
 
                     <div className="relative z-10 max-w-2xl mx-auto">
                         <h2 className="text-4xl lg:text-5xl font-black mb-8 leading-tight test">هل أنت مستعد لبدء الطلب؟</h2>

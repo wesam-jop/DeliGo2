@@ -186,5 +186,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
         // Category management
         Route::apiResource('categories', CategoryController::class)->except(['create', 'edit']);
+
+        // Broadcast notifications (marketing / reminders)
+        Route::post('/notifications/broadcast', [AdminController::class, 'broadcastNotification']);
     });
 });

@@ -64,6 +64,7 @@ import AdminUsers from './Pages/Dashboards/AdminUsers';
 import AdminSettings from './Pages/Dashboards/AdminSettings';
 import AdminLocations from './Pages/Dashboards/AdminLocations';
 import AdminCategories from './Pages/Dashboards/AdminCategories';
+import AdminNotifications from './Pages/Dashboards/AdminNotifications';
 
 // ============================
 // Route Guards
@@ -231,6 +232,7 @@ const AppRoutes = () => (
             <Route path="settings" element={<AdminSettings key="admin-settings" />} />
             <Route path="locations" element={<AdminLocations key="admin-locations" />} />
             <Route path="categories" element={<AdminCategories key="admin-categories" />} />
+            <Route path="notifications" element={<AdminNotifications key="admin-notifications" />} />
             <Route path="addresses" element={<div className="p-8 text-slate-400 font-medium test text-center py-32">صفحة العناوين — قريباً</div>} />
             <Route path="products" element={<div className="p-8 text-slate-400 font-medium test text-center py-32">صفحة المنتجات — قريباً</div>} />
             <Route path="map" element={<div className="p-8 text-slate-400 font-medium test text-center py-32">الخريطة — قريباً</div>} />

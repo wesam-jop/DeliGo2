@@ -31,14 +31,14 @@ const Contact = () => {
             <section className="bg-slate-900 text-white py-24 px-6 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-brand-dark/20 pointer-events-none"></div>
                 <div className="container mx-auto text-center relative z-10 space-y-4">
-                    <motion.span 
+                    <motion.span
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="text-brand font-black tracking-widest uppercase text-sm block"
                     >
                         اتصل بنا
                     </motion.span>
-                    <motion.h1 
+                    <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
@@ -46,7 +46,7 @@ const Contact = () => {
                     >
                         نحن دائماً <span className="text-brand italic underline decoration-white/20 underline-offset-8">هنا</span> لمساعدتك
                     </motion.h1>
-                    <motion.p 
+                    <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
@@ -61,7 +61,7 @@ const Contact = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Contact Info Cards */}
                     <div className="lg:col-span-1 space-y-6">
-                        <motion.div 
+                        <motion.div
                             whileHover={{ y: -5 }}
                             className="bg-white p-8 rounded-[2.5rem] premium-shadow border border-slate-100 flex items-start gap-6"
                         >
@@ -75,7 +75,7 @@ const Contact = () => {
                             </div>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                             whileHover={{ y: -5 }}
                             className="bg-white p-8 rounded-[2.5rem] premium-shadow border border-slate-100 flex items-start gap-6"
                         >
@@ -84,12 +84,12 @@ const Contact = () => {
                             </div>
                             <div>
                                 <h3 className="font-black text-slate-900 mb-1 text-lg">البريد الإلكتروني</h3>
-                                <p className="text-slate-500 font-bold mb-1">support@mishwari.com</p>
+                                <p className="text-slate-500 font-bold mb-1">support@DeliGo.com</p>
                                 <p className="text-slate-400 text-sm font-medium">سنرد عليك خلال 2-4 ساعات عمل</p>
                             </div>
                         </motion.div>
 
-                        <motion.div 
+                        <motion.div
                             whileHover={{ y: -5 }}
                             className="bg-white p-8 rounded-[2.5rem] premium-shadow border border-slate-100 flex items-start gap-6"
                         >
@@ -120,7 +120,7 @@ const Contact = () => {
                     <div className="lg:col-span-2">
                         <div className="bg-white p-10 md:p-14 rounded-[3rem] premium-shadow border border-slate-100 h-full">
                             {submitted ? (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     className="h-full flex flex-col items-center justify-center text-center space-y-6"
@@ -130,7 +130,7 @@ const Contact = () => {
                                     </div>
                                     <h2 className="text-3xl font-black text-slate-900">تم الإرسال بنجاح!</h2>
                                     <p className="text-slate-500 text-lg font-bold">شكراً لتواصلك معنا. سنقوم بالرد عليك في أقرب وقت ممكن.</p>
-                                    <Button variant="unstyled" 
+                                    <Button variant="unstyled"
                                         onClick={() => setSubmitted(false)}
                                         className="px-10 py-4 bg-brand text-white rounded-2xl font-black shadow-xl shadow-brand/20 hover:bg-brand-dark transition-all"
                                     >
@@ -150,9 +150,9 @@ const Contact = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <label className="text-sm font-black text-slate-700 block mr-2">الاسم بالكامل</label>
-                                            <input 
+                                            <input
                                                 required
-                                                type="text" 
+                                                type="text"
                                                 value={formData.name}
                                                 onChange={e => setFormData({...formData, name: e.target.value})}
                                                 placeholder="مثال: محمد الأحمد"
@@ -161,9 +161,9 @@ const Contact = () => {
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-sm font-black text-slate-700 block mr-2">البريد الإلكتروني</label>
-                                            <input 
+                                            <input
                                                 required
-                                                type="email" 
+                                                type="email"
                                                 value={formData.email}
                                                 onChange={e => setFormData({...formData, email: e.target.value})}
                                                 placeholder="example@mail.com"
@@ -174,9 +174,9 @@ const Contact = () => {
 
                                     <div className="space-y-3">
                                         <label className="text-sm font-black text-slate-700 block mr-2">الموضوع</label>
-                                        <input 
+                                        <input
                                             required
-                                            type="text" 
+                                            type="text"
                                             value={formData.subject}
                                             onChange={e => setFormData({...formData, subject: e.target.value})}
                                             placeholder="كيف يمكننا مساعدتك؟"
@@ -186,7 +186,7 @@ const Contact = () => {
 
                                     <div className="space-y-3">
                                         <label className="text-sm font-black text-slate-700 block mr-2">الرسالة</label>
-                                        <textarea 
+                                        <textarea
                                             required
                                             rows={6}
                                             value={formData.message}
@@ -196,7 +196,7 @@ const Contact = () => {
                                         ></textarea>
                                     </div>
 
-                                    <motion.button 
+                                    <motion.button
                                         whileHover={{ scale: 1.01, y: -2 }}
                                         whileTap={{ scale: 0.98 }}
                                         disabled={isSubmitting}

@@ -70,6 +70,9 @@ export const adminApi = {
 
     // Create area
     createArea: (data) => api.post('/admin/locations/areas', data),
+
+    // Broadcast notification to users (queued in chunks)
+    broadcastNotification: (data) => api.post('/admin/notifications/broadcast', data),
 };
 
 export default api;

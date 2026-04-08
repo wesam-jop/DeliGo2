@@ -7,6 +7,7 @@ use App\Models\Governorate;
 use App\Models\Order;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -307,5 +308,44 @@ class AdminController extends ApiController
         $user->delete();
 
         return $this->success(null, 'User deleted successfully');
+    }
+
+    /**
+     * Queue a broadcast notification to many users (processed by queue workers in chunks).
+     */
+    public function broadcastNotification(Request $request, NotificationService $notificationService): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:120'],
+            'message' => ['required', 'string', 'max:2000'],
+            'role' => ['nullable', 'string', 'in:customer,driver,store_owner,all'],
+            'send_ntfy' => ['sometimes', 'boolean'],
+            'send_whatsapp' => ['sometimes', 'boolean'],
+            'exclude_admin' => ['sometimes', 'boolean'],
+        ]);
+
+        $role = $validated['role'] ?? null;
+        if ($role === 'all') {
+            $role = null;
+        }
+
+        $chunks = $notificationService->queueBroadcastToUsers(
+            $validated['title'],
+            $validated['message'],
+            [
+                'role' => $role,
+                'exclude_admin' => $validated['exclude_admin'] ?? true,
+                'skip_ntfy' => !($validated['send_ntfy'] ?? true),
+                'skip_whatsapp' => !($validated['send_whatsapp'] ?? false),
+                'meta' => [
+                    'source' => 'admin_broadcast',
+                    'admin_id' => $request->user()->id,
+                ],
+            ]
+        );
+
+        return $this->success([
+            'queued_chunks' => $chunks,
+        ], 'Broadcast queued for delivery');
     }
 }

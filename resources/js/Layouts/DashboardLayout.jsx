@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, ShoppingBag, Store, Truck, DollarSign,
     Settings, Bell, Search, Menu, X, User, LogOut,
-    Users, MapPin, Heart, ChevronLeft, Globe, Tag, Clock, MessageCircle
+    Users, MapPin, Heart, ChevronLeft, Globe, Tag, Clock, MessageCircle, Megaphone
 } from 'lucide-react';
 import { useAuth } from '../Contexts/AuthContext';
 import NotificationsDropdown from '../Components/Dashboard/NotificationsDropdown';
@@ -20,6 +20,7 @@ const sidebarConfig = {
         { icon: Users, label: 'المستخدمون', path: '/dashboard/users' },
         { icon: Globe, label: 'المواقع', path: '/dashboard/locations' },
         { icon: Tag, label: 'التصنيفات', path: '/dashboard/categories' },
+        { icon: Megaphone, label: 'الإشعارات', path: '/dashboard/notifications' },
         { icon: MessageCircle, label: 'الرسائل', path: '/dashboard/chat' },
         { icon: Settings, label: 'الإعدادات', path: '/dashboard/settings' },
     ],
@@ -131,7 +132,7 @@ const DashboardLayout = () => {
                         {/* Logo */}
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                             <Link to="/" className="text-3xl font-black italic test text-brand">
-                                Mishwari
+                                DeliGo
                             </Link>
                             <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 hover:bg-slate-100 rounded-xl text-slate-400">
                                 <X size={18} />
