@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Services\WhatsAppService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -32,19 +33,25 @@ class NotificationService
      */
     public function sendToUser(User $user, string $title, string $message, array $options = []): bool
     {
+        $inAppSaved = $this->storeInAppNotification($user, $title, $message, $options);
         $topic = $user->ntfy_topic;
 
         if (!$topic) {
             $topic = $user->generateNtfyTopic();
         }
 
+        $whatsappSent = false;
+
         // Send WhatsApp notification
         if ($user->phone) {
             $whatsappMessage = "🔔 *{$title}*\n\n{$message}";
-            $this->whatsapp->sendMessage($user->phone, $whatsappMessage);
+            $whatsappResponse = $this->whatsapp->sendMessage($user->phone, $whatsappMessage);
+            $whatsappSent = (bool) ($whatsappResponse['success'] ?? false);
         }
 
-        return $this->send($topic, $title, $message, $options);
+        $ntfySent = $this->send($topic, $title, $message, $options);
+
+        return $inAppSaved || $ntfySent || $whatsappSent;
     }
 
     /**
@@ -148,7 +155,12 @@ class NotificationService
         $title = $titles[$status] ?? '📦 Order Update';
         $message = $messages[$status] ?? "Order {$orderNumber} status updated to {$status}.";
 
-        return $this->sendToUser($user, $title, $message, $extraData);
+        $baseOptions = [
+            'type' => 'order.status',
+            'click' => url("/orders/{$orderNumber}"),
+        ];
+
+        return $this->sendToUser($user, $title, $message, array_merge($baseOptions, $extraData));
     }
 
     /**
@@ -167,8 +179,12 @@ class NotificationService
             '💬 رسالة جديدة',
             "{$senderName}: " . substr($messageContent, 0, 100),
             [
+                'type' => 'chat.message',
                 'click' => url("/conversations/{$conversationId}"),
                 'priority' => 5,
+                'meta' => [
+                    'conversation_id' => $conversationId,
+                ],
             ]
         );
     }
@@ -220,5 +236,39 @@ class NotificationService
                 'priority' => 4,
             ]
         );
+    }
+
+    /**
+     * Persist notification for in-app inbox.
+     */
+    protected function storeInAppNotification(User $user, string $title, string $message, array $options = []): bool
+    {
+        try {
+            DB::table('notifications')->insert([
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'type' => $options['type'] ?? 'app.system',
+                'notifiable_type' => User::class,
+                'notifiable_id' => $user->id,
+                'data' => json_encode([
+                    'title' => $title,
+                    'message' => $message,
+                    'priority' => $options['priority'] ?? 3,
+                    'click' => $options['click'] ?? null,
+                    'meta' => $options['meta'] ?? [],
+                ], JSON_UNESCAPED_UNICODE),
+                'read_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::channel('daily')->error('Failed to store in-app notification', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 }

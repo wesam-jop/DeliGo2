@@ -13,6 +13,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\User;
 use App\Models\Store;
 use App\Models\CustomerAddress;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class OrderService
@@ -215,8 +216,10 @@ class OrderService
             $this->chatService->sendOrderStatusMessage(
                 $order, 
                 $status, 
-                $changedBy ? User::find($changedBy) : auth()->user()
+                $changedBy ? User::find($changedBy) : Auth::user()
             );
+
+            event(new OrderStatusChanged($order->fresh(), $status, $note));
 
             return true;
         });
@@ -278,20 +281,24 @@ class OrderService
             throw new \Exception('Order cannot be accepted by driver at this stage', 400);
         }
 
-        // Assign driver to order
-        $order->update([
-            'driver_id' => $driverId,
-            'status' => Order::STATUS_ACCEPTED_BY_DRIVER,
-        ]);
+        return DB::transaction(function () use ($order, $driverId) {
+            // Assign driver to order
+            $order->update([
+                'driver_id' => $driverId,
+                'status' => Order::STATUS_ACCEPTED_BY_DRIVER,
+            ]);
 
-        // Log status history
-        OrderStatusHistory::create([
-            'order_id' => $order->id,
-            'status' => Order::STATUS_ACCEPTED_BY_DRIVER,
-            'changed_by' => $driverId,
-        ]);
+            // Log status history
+            OrderStatusHistory::create([
+                'order_id' => $order->id,
+                'status' => Order::STATUS_ACCEPTED_BY_DRIVER,
+                'changed_by' => $driverId,
+            ]);
 
-        return true;
+            event(new OrderStatusChanged($order->fresh(), Order::STATUS_ACCEPTED_BY_DRIVER));
+
+            return true;
+        });
     }
 
     /**
