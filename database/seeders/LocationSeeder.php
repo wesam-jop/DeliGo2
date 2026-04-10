@@ -13,20 +13,24 @@ class LocationSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Idlib Governorate
-        $idlib = Governorate::create([
-            'name_en' => 'Idlib',
-            'name_ar' => 'إدلب',
-            'delivery_fee' => 0.5,
-            'is_active' => true,
-        ]);
+        $idlib = Governorate::firstOrCreate(
+            ['name_en' => 'Idlib'],
+            [
+                'name_ar' => 'إدلب',
+                'delivery_fee' => 0.5,
+                'is_active' => true,
+            ]
+        );
 
-        // Create Saraqib Area
-        Area::create([
-            'governorate_id' => $idlib->id,
-            'name_en' => 'Saraqib',
-            'name_ar' => 'سراقب',
-            'is_active' => true,
-        ]);
+        Area::firstOrCreate(
+            [
+                'governorate_id' => $idlib->id,
+                'name_en' => 'Saraqib',
+            ],
+            [
+                'name_ar' => 'سراقب',
+                'is_active' => true,
+            ]
+        );
     }
 }

@@ -19,5 +19,12 @@ export default defineConfig({
         hmr: {
             overlay: false,
         },
+        // عند فتح المشروع من منفذ Vite (مثلاً :5173) يوجّه طلبات /api إلى Laravel
+        proxy: {
+            '^/api': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+            },
+        },
     },
 });
