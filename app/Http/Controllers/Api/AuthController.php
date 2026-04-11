@@ -18,7 +18,7 @@ class AuthController extends ApiController
     ) {}
 
     /**
-     * Register a new user
+     * Register a new user (web redirect)
      */
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -34,6 +34,7 @@ class AuthController extends ApiController
 
             return $this->success([
                 'user' => $user,
+                'redirect' => '/auth/verify-otp?phone=' . urlencode($data['phone'] ?? $user->phone) . '&mode=register',
             ], 'تم إنشاء الحساب بنجاح. يرجى التحقق من رقم هاتفك برمز التحقق المرسل.', 201);
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), 400);
@@ -122,7 +123,7 @@ class AuthController extends ApiController
     }
 
     /**
-     * Forgot Password - Send reset link
+     * Forgot Password - Send OTP code
      */
     public function forgotPassword(Request $request): JsonResponse
     {
@@ -131,15 +132,184 @@ class AuthController extends ApiController
         ]);
 
         try {
-            $token = $this->authService->forgotPassword($request->phone);
+            $code = $this->authService->forgotPassword($request->phone);
 
-            // In production, send SMS. For now, we return token/log it.
             return $this->success([
-                'token' => $token,
-                'link' => url('/api/v1/auth/reset-password?token=' . $token)
-            ], 'تم إرسال رابط استعادة كلمة المرور بنجاح');
+                'message' => 'تم إرسال رمز التحقق بنجاح',
+                'expires_in' => config('auth.otp_expiry_minutes', 10) . ' دقيقة',
+            ], 'تم إرسال رمز التحقق بنجاح');
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Verify OTP for password reset
+     */
+    public function verifyOtpForPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'phone' => ['required', 'string'],
+            'code' => ['required', 'string', 'digits:4'],
+        ]);
+
+        try {
+            $this->authService->verifyOtpForPassword($request->phone, $request->code);
+
+            return $this->success([
+                'message' => 'تم التحقق بنجاح',
+            ], 'تم التحقق من رمز OTP بنجاح');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Reset Password after OTP verification
+     */
+    public function resetPasswordAfterOtp(Request $request): JsonResponse
+    {
+        $request->validate([
+            'phone' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        try {
+            $this->authService->resetPasswordAfterOtp($request->phone, $request->password);
+
+            return $this->success([
+                'message' => 'تم تغيير كلمة المرور بنجاح',
+            ], 'تم تغيير كلمة المرور بنجاح');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Show OTP verification form (web)
+     */
+    public function showOtpForm(Request $request)
+    {
+        $phone = $request->input('phone', '');
+        $mode = $request->input('mode', 'register'); // register or reset
+        $success = $request->input('success', false);
+
+        return view('auth.verify', [
+            'phone' => $phone,
+            'mode' => $success ? 'success' : 'verify-otp',
+            'success' => !!$success,
+            'canResend' => true,
+            'message' => $success ? 'تم التحقق من حسابك بنجاح. يمكنك الآن تسجيل الدخول.' : null,
+        ]);
+    }
+
+    /**
+     * Verify OTP (web)
+     */
+    public function verifyOtpWeb(Request $request)
+    {
+        $request->validate([
+            'phone' => ['required', 'string'],
+            'otp' => ['required', 'array', 'size:4'],
+            'mode' => ['required', 'string', 'in:register,reset'],
+        ]);
+
+        $code = implode('', $request->otp);
+        $phone = $request->phone;
+        $mode = $request->mode;
+
+        try {
+            if ($mode === 'register') {
+                $verified = $this->authService->verifyOtp($phone, $code);
+
+                if ($verified) {
+                    return redirect('/auth/verify?success=1&mode=register');
+                } else {
+                    return back()->withInput()->withErrors(['otp' => 'رمز التحقق غير صحيح أو منتهي الصلاحية']);
+                }
+            } else {
+                // Password reset flow
+                $this->authService->verifyOtpForPassword($phone, $code);
+                return redirect('/auth/reset-password-after-otp?phone=' . urlencode($phone));
+            }
+        } catch (\Exception $e) {
+            return back()->withInput()->withErrors(['otp' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Show forgot password form (web)
+     */
+    public function showForgotPasswordForm()
+    {
+        return view('auth.verify', [
+            'mode' => 'forgot',
+            'success' => false,
+        ]);
+    }
+
+    /**
+     * Handle forgot password submission (web)
+     */
+    public function forgotPasswordWeb(Request $request)
+    {
+        $request->validate([
+            'phone' => ['required', 'string'],
+        ]);
+
+        try {
+            $this->authService->forgotPassword($request->phone);
+            return redirect('/auth/verify-otp?phone=' . urlencode($request->phone) . '&mode=reset');
+        } catch (\Exception $e) {
+            return back()->withInput()->withErrors(['phone' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Show reset password form after OTP (web)
+     */
+    public function showResetPasswordAfterOtp(Request $request)
+    {
+        return view('auth.verify', [
+            'mode' => 'reset',
+            'verified' => true,
+            'phone' => $request->input('phone', ''),
+            'success' => false,
+        ]);
+    }
+
+    /**
+     * Handle reset password after OTP (web)
+     */
+    public function resetPasswordAfterOtpWeb(Request $request)
+    {
+        $request->validate([
+            'phone' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        try {
+            $this->authService->resetPasswordAfterOtp($request->phone, $request->password);
+            return view('auth.reset-success');
+        } catch (\Exception $e) {
+            return back()->withInput()->withErrors(['password' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Resend OTP (web)
+     */
+    public function resendOtpWeb(Request $request)
+    {
+        $phone = $request->input('phone', '');
+        $mode = $request->input('mode', 'register');
+
+        try {
+            $this->authService->sendOtp($phone);
+            return redirect('/auth/verify-otp?phone=' . urlencode($phone) . '&mode=' . $mode);
+        } catch (\Exception $e) {
+            return redirect('/auth/verify-otp?phone=' . urlencode($phone) . '&mode=' . $mode)
+                ->withErrors(['otp' => $e->getMessage()]);
         }
     }
 

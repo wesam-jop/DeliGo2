@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, LogIn, ArrowLeft } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Lock, LogIn, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../Contexts/AuthContext';
 import axios from 'axios';
 import PhoneInput from '../../Components/PhoneInput';
@@ -12,8 +12,16 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.success) {
+            setSuccess(location.state.success);
+        }
+    }, [location.state]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -83,6 +91,13 @@ const Login = () => {
             {error && (
                 <div className="p-4 bg-red-50 text-red-500 rounded-2xl text-sm font-medium mb-6">
                     {error}
+                </div>
+            )}
+
+            {success && (
+                <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl text-sm font-medium mb-6 flex items-center gap-2">
+                    <CheckCircle size={16} />
+                    {success}
                 </div>
             )}
 

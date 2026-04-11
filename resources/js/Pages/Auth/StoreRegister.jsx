@@ -188,12 +188,10 @@ const StoreRegister = () => {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            setSuccess('تم إرسال طلبك بنجاح! جاري تحويلك لصفحة التحقق...');
-            setTimeout(() => {
-                navigate('/registration-success', {
-                    state: { phone: formData.phoneData.fullNumber, role: 'store_owner' }
-                });
-            }, 1500);
+            // Redirect to OTP page
+            navigate('/verify-otp', {
+                state: { phone: formData.phoneData.fullNumber, role: 'store_owner' }
+            });
         } catch (err) {
             setError(err.response?.data?.message || 'فشل إرسال الطلب. يرجى مراجعة البيانات.');
         } finally {

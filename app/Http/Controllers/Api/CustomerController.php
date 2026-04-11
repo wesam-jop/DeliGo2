@@ -48,7 +48,7 @@ class CustomerController extends ApiController
         // Get current active order (if any)
         $currentOrder = Order::where('customer_id', $customerId)
             ->whereIn('status', ['pending', 'confirmed', 'preparing', 'ready', 'picked_up'])
-            ->with(['store', 'items.product'])
+            ->with(['items.product.store', 'address.governorate', 'address.area'])
             ->latest()
             ->first();
 

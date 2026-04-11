@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\Store\StoreRequest;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\StoreService;

@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device=device-width, initial-scale=1.0">
     <title>تم تغيير كلمة المرور</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -61,7 +61,6 @@
             font-size: 40px;
             background-color: rgba(16, 185, 129, 0.1);
             color: var(--success);
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
         }
 
         h1 {
@@ -72,16 +71,38 @@
 
         p {
             color: var(--text-secondary);
-            font-size: 16px;
-            line-height: 1.6;
+            font-size: 15px;
             margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 14px 40px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .timer {
+            font-size: 14px;
+            color: var(--text-secondary);
         }
 
         .loader {
             width: 50px;
             height: 50px;
             border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid var(--primary);
+            border-top: 3px solid var(--success);
             border-radius: 50%;
             margin: 20px auto;
             animation: spin 1s linear infinite;
@@ -91,56 +112,28 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .redirect-text {
-            font-size: 14px;
-            color: var(--text-secondary);
-            opacity: 0.8;
-        }
-
-        .timer {
-            font-weight: 700;
-            color: var(--primary);
-            display: inline-block;
-            min-width: 20px;
-        }
-
-        .btn {
-            display: inline-block;
-            background-color: var(--primary);
-            color: white;
-            padding: 12px 30px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3);
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="icon-wrapper">✓</div>
         <h1>تم تغيير كلمة المرور</h1>
-        <p>تم تحديث كلمة المرور الخاصة بك بنجاح. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.</p>
-        
+        <p>تم تغيير كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.</p>
+
         <div class="loader"></div>
-        <p class="redirect-text">
-            سيتم تحويلك لصفحة تسجيل الدخول خلال <span id="timer" class="timer">5</span> ثواني...
+        <p class="timer">
+            سيتم تحويلك تلقائياً خلال <span id="timer" style="color: var(--primary); font-weight: 700;">5</span> ثواني...
         </p>
-        
-        <a href="/login" class="btn">تسجيل الدخول</a>
+
+        <a href="/login" class="btn">اذهب الآن</a>
     </div>
 
     <script>
         let count = 5;
         const timerElement = document.getElementById('timer');
-        
         const countdown = setInterval(() => {
             count--;
             timerElement.textContent = count;
-            
             if (count <= 0) {
                 clearInterval(countdown);
                 window.location.href = '/login';

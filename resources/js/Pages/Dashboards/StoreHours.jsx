@@ -44,12 +44,17 @@ const StoreHours = () => {
                 const newSchedules = daysOfWeek.map(day => {
                     const schedule = store.schedules.find(s => s.day === day.id);
                     console.log(`Day ${day.name}:`, schedule);
+                    // Normalize time format to H:i (remove seconds if present)
+                    const normalizeTime = (time) => {
+                        if (!time) return '09:00';
+                        return time.substring(0, 5);
+                    };
                     return {
                         day: day.id,
                         dayName: day.name,
                         is_active: schedule ? schedule.is_active : false,
-                        from_time: schedule?.from_time || '09:00',
-                        to_time: schedule?.to_time || '22:00',
+                        from_time: normalizeTime(schedule?.from_time),
+                        to_time: normalizeTime(schedule?.to_time),
                     };
                 });
                 setSchedules(newSchedules);
@@ -85,8 +90,9 @@ const StoreHours = () => {
             const schedulesData = schedules.map(schedule => ({
                 day: schedule.day,
                 is_active: schedule.is_active,
-                from_time: schedule.from_time,
-                to_time: schedule.to_time,
+                // Ensure time format is H:i (without seconds)
+                from_time: schedule.from_time.substring(0, 5),
+                to_time: schedule.to_time.substring(0, 5),
             }));
 
             console.log('Saving schedules:', schedulesData);
@@ -94,7 +100,7 @@ const StoreHours = () => {
             const response = await storeOwnerApi.updateHours({ schedules: schedulesData });
             console.log('Save response:', response);
             alert('تم حفظ أوقات الدوام بنجاح!');
-            
+
             // Refresh the data
             fetchStoreHours();
         } catch (error) {
