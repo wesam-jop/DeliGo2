@@ -37,6 +37,8 @@ import WaitingApproval from './Pages/Auth/WaitingApproval';
 import RegistrationSuccess from './Pages/Auth/RegistrationSuccess';
 import VerifyEmail from './Pages/Auth/VerifyEmail';
 import ForgotPassword from './Pages/Auth/ForgotPassword';
+import VerifyOtpReset from './Pages/Auth/VerifyOtpReset';
+import ResetPassword from './Pages/Auth/ResetPassword';
 
 // Pages - Dashboard (Smart router picks correct dashboard by role)
 import Dashboard from './Pages/Dashboard';
@@ -178,6 +180,8 @@ const AppRoutes = () => (
             <Route path="/verify-otp" element={<VerifyOtp />} />
             <Route path="/waiting-approval" element={<WaitingApproval />} />
             <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+            <Route path="/verify-otp-reset" element={<GuestRoute><VerifyOtpReset /></GuestRoute>} />
+            <Route path="/reset-password" element={<GuestRoute><ResetPassword /></GuestRoute>} />
         </Route>
 
         {/* ─── Dashboard Routes (protected) ─── */}

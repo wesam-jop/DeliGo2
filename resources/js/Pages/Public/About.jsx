@@ -10,7 +10,7 @@ const About = () => (
             <div className="absolute inset-0 bg-gradient-to-br from-brand/20 to-brand-dark/20 pointer-events-none"></div>
             <div className="relative z-10 max-w-3xl mx-auto space-y-6">
                 <span className="text-brand font-bold tracking-wider uppercase text-sm">قصتنا</span>
-                <h1 className="text-5xl font-black test leading-tight">نحن <span className="text-brand">Mishwari</span><br />توصيل بدم حار</h1>
+                <h1 className="text-5xl font-black test leading-tight">نحن <span className="text-brand">DeliGo</span><br />توصيل بدم حار</h1>
                 <p className="text-slate-400 text-xl font-medium leading-relaxed">
                     بدأنا رحلتنا بفكرة بسيطة: جعل حياة الناس أسهل عبر توصيل ما يريدونه بأسرع وقت وأعلى جودة. اليوم نحن فخورون بخدمة آلاف العملاء يومياً.
                 </p>

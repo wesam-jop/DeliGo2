@@ -13,7 +13,7 @@ const AuthLayout = () => {
                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-dark/20 rounded-full blur-3xl -ml-32 -mb-32 animate-pulse delay-700"></div>
 
                     <div className="relative z-10">
-                        <Link to="/" className="text-4xl font-black test text-white mb-8 block">Mishwari</Link>
+                        <Link to="/" className="text-4xl font-black test text-white mb-8 block">DeliGo</Link>
                         <h2 className="text-5xl font-black text-white leading-tight">
                             ابدأ رحلتك معنا <br /> <span className="text-brand italic underline decoration-white/20 underline-offset-8">اليوم</span>
                         </h2>
@@ -36,7 +36,7 @@ const AuthLayout = () => {
                 {/* Main Auth Component */}
                 <div className="p-8 lg:p-16 flex flex-col justify-center">
                     <div className="lg:hidden text-center mb-8">
-                        <Link to="/" className="text-3xl font-black test text-slate-900">Mishwari</Link>
+                        <Link to="/" className="text-3xl font-black test text-slate-900">DeliGo</Link>
                     </div>
                     <Outlet />
                 </div>

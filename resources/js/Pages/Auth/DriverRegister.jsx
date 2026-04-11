@@ -97,18 +97,13 @@ const DriverRegister = () => {
                 password_confirmation: formData.password_confirmation,
             });
 
-            // Store phone for OTP
-            localStorage.setItem('temp_phone', formData.phoneData.fullNumber);
-            setSuccess('تم إرسال طلبك بنجاح! جاري تحويلك لصفحة التحقق...');
-            
-            setTimeout(() => {
-                navigate('/registration-success', { 
-                    state: { 
-                        phone: formData.phoneData.fullNumber,
-                        role: 'driver'
-                    } 
-                });
-            }, 1500);
+            // Redirect to OTP page
+            navigate('/verify-otp', {
+                state: {
+                    phone: formData.phoneData.fullNumber,
+                    role: 'driver'
+                }
+            });
         } catch (err) {
             setError(err.response?.data?.message || 'فشل إرسال الطلب. يرجى مراجعة البيانات.');
         } finally {

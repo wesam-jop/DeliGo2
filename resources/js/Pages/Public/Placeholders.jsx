@@ -2,7 +2,7 @@ import React from 'react';
 const Placeholder = ({ name }) => (
     <div className="h-[60vh] flex flex-col items-center justify-center p-8 space-y-6 text-center animate-pulse">
         <div className="w-32 h-32 bg-slate-100 rounded-[2.5rem] flex items-center justify-center">
-            <span className="text-slate-300 font-bold test">Mishwari</span>
+            <span className="text-slate-300 font-bold test">DeliGo</span>
         </div>
         <div>
             <h2 className="text-3xl font-black text-slate-900 leading-tight test uppercase">صفحة {name}</h2>

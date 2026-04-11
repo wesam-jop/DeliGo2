@@ -111,45 +111,39 @@ class AuthService
     }
 
     /**
-     * Send verification link to phone number
+     * Send OTP code to phone number
+     * Returns the OTP code (for testing) - in production should NOT return code
      */
     public function sendOtp(string $phone): string
     {
-        // Normalize phone number
         $normalizedPhone = $this->normalizePhoneNumber($phone);
 
-        // Invalidate previous unused OTPs
-        Otp::where('phone', $normalizedPhone)
-            ->unused()
-            ->update(['is_used' => true]);
+        // Delete any existing unused OTPs for this phone
+        Otp::where('phone', $normalizedPhone)->where('is_used', false)->delete();
 
-        // Generate verification token
-        $token = $this->generateVerificationToken();
+        // Generate 4-digit OTP code
+        $code = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
 
-        // Create OTP record with token
+        // Create OTP record
         Otp::create([
             'phone' => $normalizedPhone,
-            'token' => $token,
-            'code' => null, // Not used anymore
+            'token' => \Illuminate\Support\Str::random(64), // Keep token for link-based verification
+            'code' => $code, // Store the actual OTP code
             'expires_at' => now()->addMinutes(self::OTP_EXPIRY_MINUTES),
         ]);
 
-        // Generate verification link
-        $verificationLink = url('/api/v1/auth/verify-email?token=' . $token);
+        // Send OTP via WhatsApp
+        $whatsappMessage = "أهلاً بك في مشواري 🍔\nرمز التحقق الخاص بك هو: {$code}\nصالح لمدة " . self::OTP_EXPIRY_MINUTES . " دقيقة.";
+        $this->whatsapp->sendMessage($normalizedPhone, $whatsappMessage);
 
-        // Log verification link for testing (in production, send SMS)
-        \Log::info('Verification Link Generated', [
+        // Log OTP code for testing
+        \Log::info('🔑 OTP Code Generated', [
             'phone' => $normalizedPhone,
-            'link' => $verificationLink,
-            'token' => $token,
+            'code' => $code,
             'expires_at' => now()->addMinutes(self::OTP_EXPIRY_MINUTES)->format('Y-m-d H:i:s'),
         ]);
 
-        // Send SMS/WhatsApp link in production
-        $whatsappMessage = "أهلاً بك في مشواري 🍔\nيرجى تأكيد حسابك من خلال الرابط التالي:\n{$verificationLink}";
-        $this->whatsapp->sendMessage($normalizedPhone, $whatsappMessage);
-
-        return $token;
+        return $code; // Return for testing - remove in production
     }
 
     /**
@@ -196,7 +190,7 @@ class AuthService
     }
 
     /**
-     * Initiate password reset
+     * Initiate password reset - Send OTP code
      */
     public function forgotPassword(string $phone): string
     {
@@ -207,19 +201,58 @@ class AuthService
             throw new \Exception('رقم الهاتف غير مسجل لدينا', 404);
         }
 
-        // Generate token
-        $token = $this->sendOtp($normalizedPhone);
+        // Generate and send OTP code
+        $code = $this->sendOtp($normalizedPhone);
 
-        // Send Password Reset Link via WhatsApp
-        $resetLink = url('/api/v1/auth/reset-password?token=' . $token);
-        $whatsappMessage = "مشواري 🍔\nلقد طلبت إعادة تعيين كلمة المرور. يمكنك القيام بذلك عبر الرابط التالي:\n{$resetLink}";
-        $this->whatsapp->sendMessage($normalizedPhone, $whatsappMessage);
-
-        return $token;
+        return $code;
     }
 
     /**
-     * Reset password using token
+     * Verify OTP code for password reset
+     */
+    public function verifyOtpForPassword(string $phone, string $code): bool
+    {
+        $normalizedPhone = $this->normalizePhoneNumber($phone);
+
+        $otp = Otp::where('phone', $normalizedPhone)
+            ->where('code', $code)
+            ->where('is_used', false)
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (!$otp) {
+            throw new \Exception('رمز التحقق غير صحيح أو منتهي الصلاحية', 400);
+        }
+
+        // Mark OTP as used
+        $otp->update(['is_used' => true]);
+
+        return true;
+    }
+
+    /**
+     * Reset password after OTP verification
+     */
+    public function resetPasswordAfterOtp(string $phone, string $password): bool
+    {
+        $normalizedPhone = $this->normalizePhoneNumber($phone);
+        $user = User::where('phone', $normalizedPhone)->first();
+
+        if (!$user) {
+            throw new \Exception('المستخدم غير موجود', 404);
+        }
+
+        // Update password
+        $user->update([
+            'password' => \Hash::make($password),
+            'phone_verified_at' => $user->phone_verified_at ?? now(),
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Reset password using token (legacy - keep for backward compatibility)
      */
     public function resetPassword(string $token, string $password): bool
     {
@@ -233,7 +266,7 @@ class AuthService
         }
 
         $user = User::where('phone', $otp->phone)->first();
-        
+
         if (!$user) {
             throw new \Exception('المستخدم غير موجود', 404);
         }
@@ -314,7 +347,7 @@ class AuthService
     /**
      * Normalize phone number (ensure it starts with +)
      */
-    private function normalizePhoneNumber(string $phone): string
+    public function normalizePhoneNumber(string $phone): string
     {
         // Remove any existing + and spaces
         $cleaned = str_replace(['+', ' ', '-'], '', $phone);

@@ -122,7 +122,7 @@ const MainLayout = () => {
                 <div className="container mx-auto px-6 flex items-center justify-between">
                     <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-brand to-rose-500 bg-clip-text text-transparent test flex items-center gap-2">
                         <span><img src={Logo} alt="" className='w-10 h-10 rounded-full' /></span>
-                        Mishwari
+                        DeliGo
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-8 text-slate-600 font-medium">
@@ -408,7 +408,7 @@ const MainLayout = () => {
                         <div className="space-y-4">
                             <h3 className="text-2xl font-bold text-white test flex gap-2 items-center">
                                 <span><img src={Logo} alt="" className='w-10 h-10 rounded-full' /></span>
-                                Mishwari
+                                DeliGo
                             </h3>
                             <p className="text-sm leading-relaxed">
                                 منصتك الأولى لطلب المنتجات من أفضل المتاجر في منطقتك. سرعة في التوصيل وجودة في الخدمة.
@@ -447,7 +447,7 @@ const MainLayout = () => {
                         </div>
                     </div>
                     <div className="pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-                        &copy; {new Date().getFullYear()} Mishwari. جميع الحقوق محفوظة.
+                        &copy; {new Date().getFullYear()} DeliGo. جميع الحقوق محفوظة.
                     </div>
                 </div>
             </footer>

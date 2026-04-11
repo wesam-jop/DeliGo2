@@ -94,18 +94,13 @@ const CustomerRegister = () => {
                 area_id: formData.area_id,
             });
 
-            // Store phone for OTP
-            localStorage.setItem('temp_phone', formData.phoneData.fullNumber);
-            setSuccess('تم إنشاء الحساب بنجاح! جاري تحويلك لصفحة التحقق...');
-            
-            setTimeout(() => {
-                navigate('/login', { 
-                    state: { 
-                        phone: formData.phoneData.fullNumber,
-                        role: 'customer'
-                    } 
-                });
-            }, 1500);
+            // Redirect to OTP page
+            navigate('/verify-otp', {
+                state: {
+                    phone: formData.phoneData.fullNumber,
+                    role: 'customer'
+                }
+            });
         } catch (err) {
             setError(err.response?.data?.message || 'فشل إنشاء الحساب. يرجى مراجعة البيانات.');
         } finally {

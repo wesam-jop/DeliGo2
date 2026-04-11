@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-    Plus, 
-    Search, 
-    Edit, 
-    Trash2, 
-    Package, 
-    ToggleLeft, 
+import {
+    Plus,
+    Search,
+    Edit,
+    Trash2,
+    Package,
+    ToggleLeft,
     ToggleRight,
     X,
     Image as ImageIcon,
@@ -121,10 +121,10 @@ const StoreProducts = () => {
     };
 
     const handleRemoveImage = () => {
-        setFormData(prev => ({ 
-            ...prev, 
-            image: null, 
-            image_preview: null 
+        setFormData(prev => ({
+            ...prev,
+            image: null,
+            image_preview: null
         }));
         setImageKey(prev => prev + 1); // Reset file input
     };

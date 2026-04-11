@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, MapPin, CheckCircle, Clock, ArrowLeft, Heart } from 'lucide-react';
+import { ShoppingBag, MapPin, CheckCircle, Clock, ArrowLeft, Heart, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import StatCard from '../../Components/Dashboard/StatCard';
 import axios from 'axios';
@@ -124,10 +124,10 @@ const CustomerDashboard = () => {
                 <div className="p-10 bg-white border border-slate-100 rounded-[2rem] premium-shadow space-y-6 flex flex-col items-start">
                     <Heart size={40} className="text-red-500" />
                     <h3 className="font-black text-2xl text-slate-900">مفضلتي</h3>
-                    <p className="text-slate-500 font-bold">لديك 12 منتج محفوظ في قائمة مفضلتك للوصول السريع.</p>
-                    <Link to="/products" className="text-sm text-brand font-black hover:underline underline-offset-8 flex items-center gap-2">
+                    {/* <p className="text-slate-500 font-bold">لديك 12 منتج محفوظ في قائمة مفضلتك للوصول السريع.</p> */}
+                    <Link to="/dashboard/customer/favorites" className="text-sm text-brand font-black hover:underline underline-offset-8 flex items-center gap-2">
                         عرض جميع المفضلات
-                        <ArrowLeft size={16} className="rotate-180" />
+                        <ArrowRight size={16} className="rotate-180" />
                     </Link>
                 </div>
             </div>
