@@ -25,6 +25,7 @@ export const adminApi = {
 
     getStats: () => api.get('admin/dashboard'),
     getUsers: (params = {}) => api.get('admin/users', { params }),
+    getAllDrivers: (params = {}) => api.get('admin/drivers', { params }),
     getPendingStores: () => api.get('admin/stores/pending'),
     getPendingDrivers: () => api.get('admin/drivers/pending'),
     getDrivers: (params = {}) => api.get('admin/users', { params: { ...params, role: 'driver' } }),

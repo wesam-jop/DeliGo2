@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, LogIn, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Lock, LogIn, ArrowLeft, CheckCircle, ArrowRight } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../Contexts/AuthContext';
 import axios from 'axios';
@@ -133,7 +133,7 @@ const Login = () => {
                 >
                     {isLoading ? 'جاري التحميل...' : (
                         <>
-                            تسجيل الدخول <ArrowLeft size={20} className="mr-auto rotate-180" />
+                            تسجيل الدخول <ArrowRight size={20} className="mr-auto rotate-180" />
                         </>
                     )}
                 </motion.button>

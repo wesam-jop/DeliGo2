@@ -23,65 +23,58 @@ const AdminDrivers = () => {
     ];
 
     useEffect(() => {
-        // Only fetch on mount or when statusFilter changes
         let isMounted = true;
-        
-        const fetchData = async () => {
+
+        const fetchDrivers = async () => {
             try {
-                let allDrivers = [];
+                setLoading(true);
                 
-                console.log('Fetching drivers with filter:', statusFilter);
+                // Fetch all drivers with their statuses
+                const response = await adminApi.getAllDrivers();
                 
-                // Fetch pending drivers
-                const pendingRes = await adminApi.getPendingDrivers();
-                console.log('Pending drivers response:', pendingRes);
-                console.log('Pending drivers:', pendingRes.data?.data);
-                if (isMounted) allDrivers = [...allDrivers, ...(pendingRes.data?.data || []).map(d => ({...d, status: 'pending'}))];
-                
-                // Fetch approved drivers
-                const approvedRes = await adminApi.getUsers({ role: 'driver', is_approved: true });
-                console.log('Approved drivers response:', approvedRes);
-                console.log('Approved drivers:', approvedRes.data?.data?.data);
-                if (isMounted) {
-                    const approvedDrivers = (approvedRes.data?.data?.data || [])
-                        .map(d => ({...d, status: 'approved'}));
-                    allDrivers = [...allDrivers, ...approvedDrivers];
-                }
-                
-                // Fetch rejected drivers (only if filter is rejected)
-                if (isMounted && statusFilter === 'rejected') {
-                    const rejectedRes = await adminApi.getUsers({ role: 'driver', is_approved: false });
-                    console.log('Rejected drivers response:', rejectedRes);
-                    console.log('Rejected drivers:', rejectedRes.data?.data?.data);
-                    const rejectedDrivers = (rejectedRes.data?.data?.data || [])
-                        .filter(d => d.rejection_reason)
-                        .map(d => ({...d, status: 'rejected'}));
-                    allDrivers = [...allDrivers, ...rejectedDrivers];
-                }
-                
-                console.log('Total drivers:', allDrivers);
-                if (isMounted) {
-                    setDrivers(allDrivers);
-                    setLoading(false);
+                if (isMounted && response.data?.data?.data) {
+                    // Map drivers with status based on is_approved and rejection_reason
+                    const driversWithStatus = response.data.data.data.map(driver => {
+                        let status = 'approved';
+                        if (!driver.is_approved) {
+                            status = driver.rejection_reason ? 'rejected' : 'pending';
+                        }
+                        return { ...driver, status };
+                    });
+                    
+                    setDrivers(driversWithStatus);
                 }
             } catch (error) {
                 console.error('Error fetching drivers:', error);
-                if (isMounted) setLoading(false);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
-        
-        fetchData();
-        
+
+        fetchDrivers();
+
         return () => {
             isMounted = false;
         };
-    }, [statusFilter]);
+    }, []);
 
     const handleApprove = async (driverId) => {
         try {
             await adminApi.approveDriver(driverId);
-            // Refetch after approval
-            setStatusFilter('all');
+            // Refetch drivers after approval
+            const response = await adminApi.getAllDrivers();
+            if (response.data?.data?.data) {
+                const driversWithStatus = response.data.data.data.map(driver => {
+                    let status = 'approved';
+                    if (!driver.is_approved) {
+                        status = driver.rejection_reason ? 'rejected' : 'pending';
+                    }
+                    return { ...driver, status };
+                });
+                setDrivers(driversWithStatus);
+            }
         } catch (error) {
             console.error('Error approving driver:', error);
             alert('حدث خطأ أثناء الموافقة على السائق');
@@ -90,12 +83,24 @@ const AdminDrivers = () => {
 
     const handleReject = async () => {
         if (!selectedDriver || !rejectReason.trim()) return;
-        
+
         try {
             await adminApi.rejectDriver(selectedDriver, rejectReason);
             setShowRejectModal(false);
             setRejectReason('');
-            setStatusFilter('all');
+            
+            // Refetch drivers after rejection
+            const response = await adminApi.getAllDrivers();
+            if (response.data?.data?.data) {
+                const driversWithStatus = response.data.data.data.map(driver => {
+                    let status = 'approved';
+                    if (!driver.is_approved) {
+                        status = driver.rejection_reason ? 'rejected' : 'pending';
+                    }
+                    return { ...driver, status };
+                });
+                setDrivers(driversWithStatus);
+            }
         } catch (error) {
             console.error('Error rejecting driver:', error);
             alert('حدث خطأ أثناء رفض السائق');

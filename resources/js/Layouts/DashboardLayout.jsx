@@ -4,11 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, ShoppingBag, Store, Truck, DollarSign,
     Settings, Bell, Search, Menu, X, User, LogOut,
-    Users, MapPin, Heart, ChevronLeft, Globe, Tag, Clock, MessageCircle, Megaphone
+    Users, MapPin, Heart, ChevronLeft, Globe, Tag, Clock, MessageCircle, Megaphone, Speaker
 } from 'lucide-react';
 import { useAuth } from '../Contexts/AuthContext';
 import NotificationsDropdown from '../Components/Dashboard/NotificationsDropdown';
 import axios from 'axios';
+import AdOrchestrator from '../Components/AdOrchestrator';
 
 // Role-based Sidebar config
 const sidebarConfig = {
@@ -21,6 +22,7 @@ const sidebarConfig = {
         { icon: Globe, label: 'المواقع', path: '/dashboard/locations' },
         { icon: Tag, label: 'التصنيفات', path: '/dashboard/categories' },
         { icon: Megaphone, label: 'الإشعارات', path: '/dashboard/notifications' },
+        { icon: Speaker, label: 'الإعلانات', path: '/dashboard/ads' },
         { icon: MessageCircle, label: 'الرسائل', path: '/dashboard/chat' },
         { icon: Settings, label: 'الإعدادات', path: '/dashboard/settings' },
     ],
@@ -232,6 +234,8 @@ const DashboardLayout = () => {
                     <div className="p-6 md:p-8">
                         <Outlet />
                     </div>
+                    {/* Subtle ad at bottom of dashboard pages */}
+                    <AdOrchestrator placement="footer" variant="minimal" autoPlayInterval={10000} />
                 </div>
             </main>
         </div>

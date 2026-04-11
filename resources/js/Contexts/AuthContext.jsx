@@ -16,8 +16,10 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
         try {
             const response = await axios.get('/api/v1/auth/me');
-            // API returns: { success, message, data: { user: {...} } }
-            setUser(response.data.data?.user || response.data.data);
+            const userData = response.data.data?.user || response.data.data;
+            setUser(userData);
+            // تحديث localStorage ببيانات المستخدم المحدثة
+            localStorage.setItem('user', JSON.stringify(userData));
         } catch (error) {
             logout();
         } finally {
@@ -35,6 +37,8 @@ export const AuthProvider = ({ children }) => {
 
     const login = (newToken, userData) => {
         localStorage.setItem('token', newToken);
+        // حفظ المستخدم كاملاً في localStorage (بما فيه ntfy_topic)
+        localStorage.setItem('user', JSON.stringify(userData));
         setToken(newToken);
         setUser(userData);
         axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
@@ -42,6 +46,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         setToken(null);
         setUser(null);
         delete axios.defaults.headers.common['Authorization'];

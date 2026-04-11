@@ -6,6 +6,7 @@ import { useCart } from '../Contexts/CartContext';
 import { useAuth } from '../Contexts/AuthContext';
 import Logo from '../assets/images/logo2.png';
 import axios from 'axios';
+import AdOrchestrator from '../Components/AdOrchestrator';
 
 const MainLayout = () => {
     const { getCartCount } = useCart();
@@ -400,6 +401,9 @@ const MainLayout = () => {
             <div className="pt-20 flex-1">
                 <Outlet />
             </div>
+
+            {/* Subtle Ad Banner between content and footer */}
+            <AdOrchestrator placement="footer" variant="minimal" autoPlayInterval={7000} />
 
             {/* Footer */}
             <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">

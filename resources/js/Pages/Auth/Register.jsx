@@ -50,9 +50,11 @@ const Register = () => {
                 ...formData,
                 phone: formData.phoneData.fullNumber
             });
+            // Save phone and role to localStorage for OTP page
             localStorage.setItem('temp_phone', formData.phoneData.fullNumber);
-            // Redirect to home page after registration
-            navigate('/');
+            localStorage.setItem('temp_role', formData.role);
+            // Redirect to OTP page using hard navigation
+            window.location.href = '/verify-otp';
         } catch (err) {
             setError(err.response?.data?.message || 'فشل إنشاء الحساب. يرجى مراجعة البيانات.');
         } finally {

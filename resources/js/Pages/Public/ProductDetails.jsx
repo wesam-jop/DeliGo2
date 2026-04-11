@@ -7,6 +7,7 @@ import { useCart } from '../../Contexts/CartContext';
 import { useAuth } from '../../Contexts/AuthContext';
 import ProductCard from '../../Components/ProductCard';
 import Button from '../../Components/Button';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 
 const ProductDetails = () => {
@@ -127,7 +128,7 @@ const ProductDetails = () => {
     const handleShare = async () => {
         const shareData = {
             title: product?.name,
-            text: product?.description || `اطلب ${product?.name} من تطبيق مشواري!`,
+            text: product?.description || `اطلب ${product?.name} من تطبيق DeliGo!`,
             url: window.location.href,
         };
 
@@ -359,6 +360,9 @@ const ProductDetails = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Subtle ad at bottom */}
+                <AdOrchestrator placement="banner" variant="compact" autoPlayInterval={8000} />
             </div>
         </div>
     );

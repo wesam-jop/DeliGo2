@@ -1,4 +1,5 @@
 import React from 'react';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 const Section = ({ title, children }) => (
     <div className="space-y-4">
@@ -34,6 +35,7 @@ const Privacy = () => (
                 لأي استفسار يتعلق بسياسة الخصوصية، لا تتردد في التواصل معنا عبر البريد الإلكتروني: privacy@DeliGo.app
             </Section>
         </div>
+        <AdOrchestrator placement="banner" variant="minimal" autoPlayInterval={12000} />
     </div>
 );
 

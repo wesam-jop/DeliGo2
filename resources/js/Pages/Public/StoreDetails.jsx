@@ -7,6 +7,7 @@ import { useCart } from '../../Contexts/CartContext';
 import { useAuth } from '../../Contexts/AuthContext';
 import axios from 'axios';
 import Button from '../../Components/Button';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 
 const ProductCard = ({ product, storeId, onAdd, isStoreOpen = true }) => {
@@ -280,6 +281,9 @@ const StoreDetails = () => {
                     </div>
                 )}
             </div>
+
+            {/* Subtle ad at bottom */}
+            <AdOrchestrator placement="banner" variant="compact" autoPlayInterval={8000} />
 
             {/* Floating Cart Button */}
             {cartCount > 0 && (

@@ -17,6 +17,7 @@ import ProductCard from '../../Components/ProductCard';
 import { storeApi } from '../../Services/api';
 import Hero from '../../assets/images/hero-background-ar-7.png';
 import Logo from '../../assets/images/logo2.png';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 const FeatureCard = ({ icon: Icon, title, desc, color }) => (
     <motion.div
         whileHover={{ y: -10 }}
@@ -161,6 +162,9 @@ const Home = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Ad Banner - Full width between sections */}
+            <AdOrchestrator placement="banner" variant="full" autoPlayInterval={6000} />
 
             {/* Products Section */}
             <section className="container mx-auto px-6">

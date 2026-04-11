@@ -67,6 +67,25 @@ class AdminController extends ApiController
     }
 
     /**
+     * Get all drivers with their statuses
+     */
+    public function allDrivers(Request $request): JsonResponse
+    {
+        $query = User::role('driver')
+            ->with(['governorate', 'area'])
+            ->latest();
+
+        // Optional: filter by approval status
+        if ($request->has('is_approved')) {
+            $query->where('is_approved', $request->is_approved);
+        }
+
+        $drivers = $query->paginate(100);
+
+        return $this->success($drivers);
+    }
+
+    /**
      * Get pending drivers for approval
      */
     public function pendingDrivers(): JsonResponse
@@ -322,6 +341,13 @@ class AdminController extends ApiController
             'send_ntfy' => ['sometimes', 'boolean'],
             'send_whatsapp' => ['sometimes', 'boolean'],
             'exclude_admin' => ['sometimes', 'boolean'],
+            
+            // رابط إجراء مخصص (اختياري)
+            'action_url' => ['nullable', 'url', 'max:500'],
+            
+            // وسائط مرفقة (اختياري)
+            'media_url' => ['nullable', 'url', 'max:500'],
+            'media_type' => ['nullable', 'string', 'in:image,video'],
         ]);
 
         $role = $validated['role'] ?? null;
@@ -337,6 +363,9 @@ class AdminController extends ApiController
                 'exclude_admin' => $validated['exclude_admin'] ?? true,
                 'skip_ntfy' => !($validated['send_ntfy'] ?? true),
                 'skip_whatsapp' => !($validated['send_whatsapp'] ?? false),
+                'click' => $validated['action_url'] ?? null,
+                'media_url' => $validated['media_url'] ?? null,
+                'media_type' => $validated['media_type'] ?? null,
                 'meta' => [
                     'source' => 'admin_broadcast',
                     'admin_id' => $request->user()->id,

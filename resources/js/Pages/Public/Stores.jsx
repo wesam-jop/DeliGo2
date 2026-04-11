@@ -5,6 +5,7 @@ import StoreCard from '../../Components/StoreCard';
 import { storeApi, locationApi } from '../../Services/api';
 import { useAuth } from '../../Contexts/AuthContext';
 import Button from '../../Components/Button';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 
 const Stores = () => {
@@ -208,7 +209,7 @@ const Stores = () => {
                     ))}
                 </div>
             ) : (
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200"
@@ -220,6 +221,9 @@ const Stores = () => {
                     <p className="text-slate-500 font-bold">جرب تغيير الفلاتر أو البحث عن شيء آخر</p>
                 </motion.div>
             )}
+
+            {/* Subtle ad at bottom */}
+            <AdOrchestrator placement="banner" variant="compact" autoPlayInterval={7000} />
         </div>
     );
 };
