@@ -5,6 +5,7 @@ import { Plus, Minus, Trash2, CreditCard, MapPin, ChevronLeft, ArrowRight } from
 import { useCart } from '../../Contexts/CartContext';
 import { useAuth } from '../../Contexts/AuthContext';
 import Button from '../../Components/Button';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 
 const Cart = () => {
@@ -179,6 +180,9 @@ const Cart = () => {
                     </div>
                 </div>
             )}
+
+            {/* Subtle ad at bottom */}
+            <AdOrchestrator placement="banner" variant="minimal" autoPlayInterval={10000} />
         </div>
     );
 };

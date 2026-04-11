@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdvertisementController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
@@ -62,6 +63,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/stores/{store}/products/{product}', [StoreController::class, 'product']);
     Route::get('/stores/{store}/hours', [StoreController::class, 'hours']);
     Route::get('/store/hours', [StoreController::class, 'myHours']); // For store owner
+
+    // Advertisements (public - active ads by placement)
+    Route::get('/ads/{placement}', [AdvertisementController::class, 'getActiveAds']);
 });
 
 // Protected routes (authentication required)
@@ -170,6 +174,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::post('/stores/{store}/reject', [AdminController::class, 'rejectStore']);
 
         // Driver approval
+        Route::get('/drivers', [AdminController::class, 'allDrivers']);
         Route::get('/drivers/pending', [AdminController::class, 'pendingDrivers']);
         Route::post('/drivers/{driver}/approve', [AdminController::class, 'approveDriver']);
         Route::post('/drivers/{driver}/reject', [AdminController::class, 'rejectDriver']);
@@ -192,5 +197,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
         // Broadcast notifications (marketing / reminders)
         Route::post('/notifications/broadcast', [AdminController::class, 'broadcastNotification']);
+
+        // Advertisement management
+        Route::get('/ads', [AdvertisementController::class, 'index']);
+        Route::post('/ads', [AdvertisementController::class, 'store']);
+        Route::put('/ads/{advertisement}', [AdvertisementController::class, 'update']);
+        Route::delete('/ads/{advertisement}', [AdvertisementController::class, 'destroy']);
     });
 });

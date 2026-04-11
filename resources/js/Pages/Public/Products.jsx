@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../../Components/ProductCard';
 import { storeApi, locationApi } from '../../Services/api';
 import { useAuth } from '../../Contexts/AuthContext';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 const Products = () => {
     const { user } = useAuth();
@@ -227,6 +228,9 @@ const Products = () => {
                     <p className="text-slate-500 font-bold">جرب تغيير الفلاتر أو البحث عن شيء آخر</p>
                 </motion.div>
             )}
+
+            {/* Subtle ad at bottom */}
+            <AdOrchestrator placement="banner" variant="compact" autoPlayInterval={7000} />
         </div>
     );
 };

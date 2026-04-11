@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, Target, Truck, Heart } from 'lucide-react';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 
 const About = () => (
@@ -35,6 +36,9 @@ const About = () => (
                 ))}
             </div>
         </section>
+
+        {/* Subtle ad between sections */}
+        <AdOrchestrator placement="banner" variant="compact" autoPlayInterval={8000} />
 
         {/* Team */}
         <section className="container mx-auto px-6">

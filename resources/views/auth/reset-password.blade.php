@@ -151,7 +151,7 @@
     <div class="container">
         <div class="icon-wrapper">🔒</div>
         <h1>استعادة كلمة المرور</h1>
-        <p>يرجى إدخال كلمة المرور الجديدة وتأكيدها لاستعادة الوصول لموقع مشواري.</p>
+        <p>يرجى إدخال كلمة المرور الجديدة وتأكيدها لاستعادة الوصول لموقع DeliGo.</p>
 
         @if(isset($errors) && $errors->any())
             <div class="error-box">

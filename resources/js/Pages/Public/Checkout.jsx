@@ -7,6 +7,7 @@ import { useAuth } from '../../Contexts/AuthContext';
 import axios from 'axios';
 import LeafletMap from '../../Components/LeafletMap';
 import Button from '../../Components/Button';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 
 const Checkout = () => {
@@ -535,6 +536,7 @@ const Checkout = () => {
                     </div>
                 </div>
             </div>
+            <AdOrchestrator placement="banner" variant="minimal" autoPlayInterval={10000} />
         </div>
     );
 };

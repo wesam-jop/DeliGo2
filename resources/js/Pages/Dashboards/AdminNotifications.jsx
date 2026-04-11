@@ -18,6 +18,9 @@ const AdminNotifications = () => {
         send_ntfy: true,
         send_whatsapp: false,
         exclude_admin: true,
+        action_url: '',
+        media_url: '',
+        media_type: 'image',
     });
 
     if (authLoading) {
@@ -45,6 +48,9 @@ const AdminNotifications = () => {
             send_ntfy: form.send_ntfy,
             send_whatsapp: form.send_whatsapp,
             exclude_admin: form.exclude_admin,
+            action_url: form.action_url.trim() || undefined,
+            media_url: form.media_url.trim() || undefined,
+            media_type: form.media_url.trim() ? form.media_type : undefined,
         };
 
         try {
@@ -196,6 +202,52 @@ const AdminNotifications = () => {
                         />
                         <span className="text-sm text-slate-700">استثناء حسابات المشرفين</span>
                     </label>
+                </div>
+
+                {/* 🔗 رابط الإجراء */}
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                        رابط الإجراء (اختياري)
+                    </label>
+                    <input
+                        type="url"
+                        value={form.action_url}
+                        onChange={(e) => setForm({ ...form, action_url: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
+                        placeholder="https://yourdomain.com/orders/123"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">
+                        عند الضغط على الإشعار، سيتم توجيه المستخدم لهذا الرابط
+                    </p>
+                </div>
+
+                {/* 🖼️ رابط الوسائط */}
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                        رابط الوسائط (اختياري)
+                    </label>
+                    <input
+                        type="url"
+                        value={form.media_url}
+                        onChange={(e) => setForm({ ...form, media_url: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none"
+                        placeholder="https://yourdomain.com/storage/promotions/banner.jpg"
+                    />
+                </div>
+
+                {/* 📹 نوع الوسائط */}
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                        نوع الوسائط
+                    </label>
+                    <select
+                        value={form.media_type}
+                        onChange={(e) => setForm({ ...form, media_type: e.target.value })}
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white"
+                    >
+                        <option value="image">صورة</option>
+                        <option value="video">فيديو</option>
+                    </select>
                 </div>
 
                 <div className="pt-4">

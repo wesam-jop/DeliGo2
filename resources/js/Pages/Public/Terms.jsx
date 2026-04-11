@@ -1,4 +1,5 @@
 import React from 'react';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 const Section = ({ title, children }) => (
     <div className="space-y-4">
@@ -31,6 +32,7 @@ const Terms = () => (
                 نحتفظ بحق تعديل هذه الشروط في أي وقت. سنخطرك بأي تغييرات جوهرية عبر البريد الإلكتروني أو إشعار داخل التطبيق. الاستمرار في استخدام الخدمة يعني قبولك للشروط الجديدة.
             </Section>
         </div>
+        <AdOrchestrator placement="banner" variant="minimal" autoPlayInterval={12000} />
     </div>
 );
 

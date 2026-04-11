@@ -11,16 +11,19 @@ use Illuminate\Support\Facades\Log;
 
 class NotificationService
 {
-    /**
-     * Ntfy base URL
-     */
-    const BASE_URL = 'https://ntfy.sh';
-
     protected WhatsAppService $whatsapp;
 
     public function __construct(WhatsAppService $whatsapp)
     {
         $this->whatsapp = $whatsapp;
+    }
+
+    /**
+     * Get ntfy base URL from environment (supports self-hosted or ntfy.sh)
+     */
+    protected function getNtfyBaseUrl(): string
+    {
+        return env('NTFY_BASE_URL', 'https://ntfy.sh');
     }
 
     /**
@@ -160,7 +163,7 @@ class NotificationService
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post(self::BASE_URL . '/' . $topic, $payload);
+            ])->post($this->getNtfyBaseUrl() . '/' . $topic, $payload);
 
             if ($response->successful()) {
                 Log::channel('daily')->info('Notification sent', [
@@ -321,6 +324,8 @@ class NotificationService
                     'message' => $message,
                     'priority' => $options['priority'] ?? 3,
                     'click' => $options['click'] ?? null,
+                    'media_url' => $options['media_url'] ?? null,
+                    'media_type' => $options['media_type'] ?? null,
                     'meta' => $options['meta'] ?? [],
                 ], JSON_UNESCAPED_UNICODE),
                 'read_at' => null,

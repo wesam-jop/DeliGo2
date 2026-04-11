@@ -133,7 +133,7 @@ class AuthService
         ]);
 
         // Send OTP via WhatsApp
-        $whatsappMessage = "أهلاً بك في مشواري 🍔\nرمز التحقق الخاص بك هو: {$code}\nصالح لمدة " . self::OTP_EXPIRY_MINUTES . " دقيقة.";
+        $whatsappMessage = "أهلاً بك في DeliGo \nرمز التحقق الخاص بك هو: {$code}\nصالح لمدة " . self::OTP_EXPIRY_MINUTES . " دقيقة.";
         $this->whatsapp->sendMessage($normalizedPhone, $whatsappMessage);
 
         // Log OTP code for testing

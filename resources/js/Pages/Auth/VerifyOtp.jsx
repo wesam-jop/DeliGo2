@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, Mail, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -15,9 +15,10 @@ const VerifyOtp = () => {
     const [success, setSuccess] = useState('');
     const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
     const [canResend, setCanResend] = useState(false);
+    const inputRefs = useRef([]);
 
     const phone = location.state?.phone || localStorage.getItem('temp_phone');
-    const role = location.state?.role || 'customer';
+    const role = location.state?.role || localStorage.getItem('temp_role') || 'customer';
     const mode = location.state?.mode || 'register'; // 'register' or 'reset'
 
     useEffect(() => {
@@ -26,6 +27,12 @@ const VerifyOtp = () => {
             return;
         }
 
+        // Focus first input when component mounts
+        const focusTimer = setTimeout(() => {
+            inputRefs.current[0]?.focus();
+        }, 300);
+
+        // Countdown timer
         const timer = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
@@ -37,7 +44,10 @@ const VerifyOtp = () => {
             });
         }, 1000);
 
-        return () => clearInterval(timer);
+        return () => {
+            clearTimeout(focusTimer);
+            clearInterval(timer);
+        };
     }, [phone, navigate]);
 
     const handleOtpChange = (index, value) => {
@@ -47,10 +57,14 @@ const VerifyOtp = () => {
         newOtp[index] = value;
         setOtp(newOtp);
 
+        // Move to next input after React updates the DOM
         if (value && index < 3) {
-            document.getElementById(`otp-${index + 1}`)?.focus();
+            setTimeout(() => {
+                inputRefs.current[index + 1]?.focus();
+            }, 10);
         }
 
+        // Auto-submit when all fields are filled
         if (newOtp.every(digit => digit !== '')) {
             handleSubmit(newOtp.join(''));
         }
@@ -58,7 +72,7 @@ const VerifyOtp = () => {
 
     const handleKeyDown = (index, e) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
-            document.getElementById(`otp-${index - 1}`)?.focus();
+            inputRefs.current[index - 1]?.focus();
         }
     };
 
@@ -190,19 +204,19 @@ const VerifyOtp = () => {
             )}
 
             <div className="mb-8">
-                <div className="flex gap-3 justify-center">
+                <div className="flex gap-3 justify-center" dir="ltr">
                     {otp.map((digit, index) => (
                         <input
                             key={index}
-                            id={`otp-${index}`}
+                            ref={(el) => (inputRefs.current[index] = el)}
                             type="text"
                             inputMode="numeric"
                             maxLength={1}
                             value={digit}
                             onChange={(e) => handleOtpChange(index, e.target.value)}
                             onKeyDown={(e) => handleKeyDown(index, e)}
-                            disabled={isLoading}
-                            className="w-16 h-16 text-center text-2xl font-black border-2 border-slate-200 rounded-2xl focus:border-brand outline-none transition-all disabled:opacity-50"
+                            disabled={isLoading || (index > 0 && otp[index - 1] === '')}
+                            className="w-16 h-16 text-center text-2xl font-black border-2 border-slate-200 rounded-2xl focus:border-brand outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                     ))}
                 </div>

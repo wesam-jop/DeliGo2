@@ -188,10 +188,12 @@ const StoreRegister = () => {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            // Redirect to OTP page
-            navigate('/verify-otp', {
-                state: { phone: formData.phoneData.fullNumber, role: 'store_owner' }
-            });
+            // Save phone and role to localStorage for OTP page
+            localStorage.setItem('temp_phone', formData.phoneData.fullNumber);
+            localStorage.setItem('temp_role', 'store_owner');
+
+            // Redirect to OTP page using hard navigation
+            window.location.href = '/verify-otp';
         } catch (err) {
             setError(err.response?.data?.message || 'فشل إرسال الطلب. يرجى مراجعة البيانات.');
         } finally {

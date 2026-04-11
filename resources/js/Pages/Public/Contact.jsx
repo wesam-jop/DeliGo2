@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, MessageSquare, ExternalLink, Share2 } from 'lucide-react';
 import Button from '../../Components/Button';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 
 const Contact = () => {
@@ -214,6 +215,7 @@ const Contact = () => {
                     </div>
                 </div>
             </section>
+            <AdOrchestrator placement="banner" variant="minimal" autoPlayInterval={12000} />
         </div>
     );
 };

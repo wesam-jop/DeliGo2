@@ -1,10 +1,13 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import AdOrchestrator from '../Components/AdOrchestrator';
 
 const AuthLayout = () => {
+    const location = useLocation();
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 font-body" dir="rtl">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 font-body" dir="rtl">
             <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[2.5rem] overflow-hidden premium-shadow min-h-[700px]">
                 {/* Side Content or Image */}
                 <div className="hidden lg:flex bg-slate-900 p-12 flex-col justify-between relative overflow-hidden">
@@ -21,16 +24,6 @@ const AuthLayout = () => {
                             اكتشف أفضل المتاجر والخدمات في مكان واحد. سرعة، أمان، وسهولة تامة.
                         </p>
                     </div>
-
-                    {/* <div className="relative z-10">
-                        <div className="flex bg-slate-800/50 p-4 rounded-2xl backdrop-blur-sm border border-slate-700/50 items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-slate-700"></div>
-                            <div>
-                                <p className="text-sm font-bold text-white test">"تجربة مستخدم رائعة وخدمة لا مثيل لها."</p>
-                                <p className="text-xs text-slate-400 mt-1 font-bold">سامر العلي - زبون مميز</p>
-                            </div>
-                        </div>
-                    </div> */}
                 </div>
 
                 {/* Main Auth Component */}
@@ -38,8 +31,13 @@ const AuthLayout = () => {
                     <div className="lg:hidden text-center mb-8">
                         <Link to="/" className="text-3xl font-black test text-slate-900">DeliGo</Link>
                     </div>
-                    <Outlet />
+                    <Outlet key={location.pathname} />
                 </div>
+            </div>
+
+            {/* Subtle ad below auth card */}
+            <div className="w-full max-w-lg mt-6">
+                <AdOrchestrator placement="sidebar" variant="compact" autoPlayInterval={8000} />
             </div>
         </div>
     );

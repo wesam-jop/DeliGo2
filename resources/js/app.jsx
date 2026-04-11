@@ -3,9 +3,12 @@ import '../css/app.css';
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './Contexts/AuthContext';
 import { CartProvider } from './Contexts/CartContext';
+import { ToastProvider } from './Components/ToastNotifications';
+import { MediaViewerProvider } from './Components/MediaViewer';
+import { useNtfy } from './hooks/useNtfy';
 
 // Layouts
 import DashboardLayout from './Layouts/DashboardLayout';
@@ -67,6 +70,7 @@ import AdminSettings from './Pages/Dashboards/AdminSettings';
 import AdminLocations from './Pages/Dashboards/AdminLocations';
 import AdminCategories from './Pages/Dashboards/AdminCategories';
 import AdminNotifications from './Pages/Dashboards/AdminNotifications';
+import AdminAds from './Pages/Dashboards/AdminAds';
 
 // ============================
 // Route Guards
@@ -105,7 +109,16 @@ const ProtectedRoute = ({ children, roles = [] }) => {
 
 const GuestRoute = ({ children }) => {
     const { token, loading } = useAuth();
-    if (loading) return null;
+    if (loading) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center bg-slate-50">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-slate-500 font-medium">جاري التحميل...</p>
+                </div>
+            </div>
+        );
+    }
     if (token) return <Navigate to="/" replace />;
     return children;
 };
@@ -237,6 +250,7 @@ const AppRoutes = () => (
             <Route path="locations" element={<AdminLocations key="admin-locations" />} />
             <Route path="categories" element={<AdminCategories key="admin-categories" />} />
             <Route path="notifications" element={<AdminNotifications key="admin-notifications" />} />
+            <Route path="ads" element={<AdminAds key="admin-ads" />} />
             <Route path="addresses" element={<div className="p-8 text-slate-400 font-medium test text-center py-32">صفحة العناوين — قريباً</div>} />
             <Route path="products" element={<div className="p-8 text-slate-400 font-medium test text-center py-32">صفحة المنتجات — قريباً</div>} />
             <Route path="map" element={<div className="p-8 text-slate-400 font-medium test text-center py-32">الخريطة — قريباً</div>} />
@@ -253,12 +267,28 @@ const AppRoutes = () => (
 const App = () => (
     <AuthProvider>
         <CartProvider>
-            <BrowserRouter>
-                <AppRoutes />
-            </BrowserRouter>
+            <ToastProvider>
+                <MediaViewerProvider>
+                    <BrowserRouter>
+                        <AppWithNtfy />
+                    </BrowserRouter>
+                </MediaViewerProvider>
+            </ToastProvider>
         </CartProvider>
     </AuthProvider>
 );
+
+/**
+ * Component that activates ntfy polling after login
+ */
+const AppWithNtfy = () => {
+    const { token } = useAuth();
+    
+    // تفعيل استقبال الإشعارات عند تسجيل الدخول
+    useNtfy();
+    
+    return <AppRoutes />;
+};
 
 const container = document.getElementById('app');
 if (container) {

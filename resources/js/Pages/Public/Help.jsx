@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronDown, CircleHelp, ShoppingBag, Truck, User, CreditCard, MessageSquare } from 'lucide-react';
 import Button from '../../Components/Button';
+import AdOrchestrator from '../../Components/AdOrchestrator';
 
 
 const Help = () => {
@@ -141,6 +142,7 @@ const Help = () => {
                     </div>
                 </div>
             </div>
+            <AdOrchestrator placement="banner" variant="minimal" autoPlayInterval={12000} />
         </div>
     );
 };
