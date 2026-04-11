@@ -12,11 +12,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Update orders table status column
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status VARCHAR(50) DEFAULT 'pending'");
-        
-        // Update order_store_splits table status column
-        DB::statement("ALTER TABLE order_store_splits MODIFY COLUMN status VARCHAR(50) DEFAULT 'pending'");
+        Schema::table('orders', function (Blueprint $table) {
+            $table->string('status', 50)->default('pending')->change();
+        });
+
+        Schema::table('order_store_splits', function (Blueprint $table) {
+            $table->string('status', 50)->default('pending')->change();
+        });
     }
 
     /**
@@ -24,8 +26,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert to enum if needed
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending', 'accepted_by_driver', 'confirmed', 'preparing', 'ready', 'picked_up', 'delivered', 'cancelled') DEFAULT 'pending'");
-        DB::statement("ALTER TABLE order_store_splits MODIFY COLUMN status ENUM('pending', 'confirmed', 'preparing', 'ready', 'picked_up', 'delivered', 'cancelled') DEFAULT 'pending'");
+        Schema::table('orders', function (Blueprint $table) {
+            $table->string('status', 50)->default('pending')->change();
+        });
+
+        Schema::table('order_store_splits', function (Blueprint $table) {
+            $table->string('status', 50)->default('pending')->change();
+        });
     }
 };

@@ -146,6 +146,10 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     // Notification routes
     Route::prefix('notifications')->middleware('auth:sanctum')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::post('/{notification}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::get('/topic', [NotificationController::class, 'getTopic']);
         Route::post('/topic', [NotificationController::class, 'updateTopic']);
         Route::post('/test', [NotificationController::class, 'sendTest']);
@@ -185,5 +189,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
         // Category management
         Route::apiResource('categories', CategoryController::class)->except(['create', 'edit']);
+
+        // Broadcast notifications (marketing / reminders)
+        Route::post('/notifications/broadcast', [AdminController::class, 'broadcastNotification']);
     });
 });

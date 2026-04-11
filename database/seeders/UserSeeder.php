@@ -14,14 +14,16 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Create Admin User ONLY
-        User::create([
-            'name' => 'مدير النظام',
-            'phone' => '+963911111111',
-            'password' => Hash::make('123456'),
-            'role' => 'admin',
-            'phone_verified_at' => now(),
-            'is_approved' => true,
-        ]);
+        User::firstOrCreate(
+            ['phone' => '+963911111111'],
+            [
+                'name' => 'مدير النظام',
+                'password' => Hash::make('123456'),
+                'role' => 'admin',
+                'phone_verified_at' => now(),
+                'is_approved' => true,
+            ]
+        );
 
     }
 }

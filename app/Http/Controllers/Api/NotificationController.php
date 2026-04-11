@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Http\Request;
 
 class NotificationController extends ApiController
@@ -84,5 +84,68 @@ class NotificationController extends ApiController
             'topic' => $user->ntfy_topic,
             'notifications_enabled' => $user->ntfy_topic !== null,
         ]);
+    }
+
+    /**
+     * List user notifications (in-app inbox)
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'unread_only' => ['nullable', 'boolean'],
+        ]);
+
+        $query = $request->user()->notifications()->latest();
+
+        if (($validated['unread_only'] ?? false) === true) {
+            $query->whereNull('read_at');
+        }
+
+        $notifications = $query->paginate($validated['per_page'] ?? 20);
+
+        return $this->success($notifications);
+    }
+
+    /**
+     * Get unread notifications count
+     */
+    public function unreadCount(Request $request): JsonResponse
+    {
+        return $this->success([
+            'unread_count' => $request->user()->unreadNotifications()->count(),
+        ]);
+    }
+
+    /**
+     * Mark a notification as read
+     */
+    public function markAsRead(Request $request, string $notification): JsonResponse
+    {
+        /** @var DatabaseNotification|null $notificationModel */
+        $notificationModel = $request->user()
+            ->notifications()
+            ->where('id', $notification)
+            ->first();
+
+        if (!$notificationModel) {
+            return $this->error('Notification not found', 404);
+        }
+
+        if ($notificationModel->read_at === null) {
+            $notificationModel->markAsRead();
+        }
+
+        return $this->success(null, 'Notification marked as read');
+    }
+
+    /**
+     * Mark all notifications as read
+     */
+    public function markAllAsRead(Request $request): JsonResponse
+    {
+        $request->user()->unreadNotifications->markAsRead();
+
+        return $this->success(null, 'All notifications marked as read');
     }
 }

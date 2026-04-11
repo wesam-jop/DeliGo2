@@ -4,7 +4,7 @@ import { ShoppingCart, User, Search, MapPin, Phone, LayoutDashboard, Heart, Pack
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../Contexts/CartContext';
 import { useAuth } from '../Contexts/AuthContext';
-import Logo from '../assets/images/logo.png';
+import Logo from '../assets/images/logo2.png';
 import axios from 'axios';
 
 const MainLayout = () => {
@@ -135,7 +135,7 @@ const MainLayout = () => {
 
                     <div className="flex items-center gap-4">
                         {/* {token && canAccessDashboard() && (
-                            <Link 
+                            <Link
                                 to={getDashboardLink()}
                                 className="hidden sm:flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-full font-medium hover:bg-brand-dark transition-all shadow-lg shadow-brand/20"
                             >

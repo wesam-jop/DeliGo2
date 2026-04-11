@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, ShoppingBag, Store, Truck, DollarSign,
     Settings, Bell, Search, Menu, X, User, LogOut,
-    Users, MapPin, Heart, ChevronLeft, Globe, Tag, Clock, MessageCircle
+    Users, MapPin, Heart, ChevronLeft, Globe, Tag, Clock, MessageCircle, Megaphone
 } from 'lucide-react';
 import { useAuth } from '../Contexts/AuthContext';
 import NotificationsDropdown from '../Components/Dashboard/NotificationsDropdown';
@@ -20,6 +20,7 @@ const sidebarConfig = {
         { icon: Users, label: 'المستخدمون', path: '/dashboard/users' },
         { icon: Globe, label: 'المواقع', path: '/dashboard/locations' },
         { icon: Tag, label: 'التصنيفات', path: '/dashboard/categories' },
+        { icon: Megaphone, label: 'الإشعارات', path: '/dashboard/notifications' },
         { icon: MessageCircle, label: 'الرسائل', path: '/dashboard/chat' },
         { icon: Settings, label: 'الإعدادات', path: '/dashboard/settings' },
     ],

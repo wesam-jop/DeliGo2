@@ -3,7 +3,6 @@
 namespace App\Listeners;
 
 use App\Events\OrderStatusChanged;
-use App\Models\Order;
 use App\Services\NotificationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -24,33 +23,60 @@ class SendOrderStatusNotification implements ShouldQueue
      */
     public function handle(OrderStatusChanged $event): void
     {
-        $order = $event->order;
+        $order = $event->order->loadMissing(['customer', 'driver', 'storeSplits.store.owner']);
         $status = $event->status;
 
         // Notify customer
-        $this->notificationService->sendOrderNotification(
-            $order->customer,
-            $status,
-            $order->order_number
-        );
-
-        // Notify driver if assigned
-        if ($order->driver_id && $status !== 'pending') {
+        if ($order->customer) {
             $this->notificationService->sendOrderNotification(
-                $order->driver,
+                $order->customer,
                 $status,
-                $order->order_number
+                $order->order_number,
+                [
+                    'type' => 'order.status',
+                    'meta' => [
+                        'order_id' => $order->id,
+                        'status' => $status,
+                    ],
+                ]
             );
         }
 
-        // Notify store owner
-        if ($order->storeSplits()->exists()) {
-            $storeOwner = $order->storeSplits->first()?->store?->owner;
-            if ($storeOwner) {
+        // Notify driver if assigned
+        if ($order->driver && $status !== 'pending') {
+            $this->notificationService->sendOrderNotification(
+                $order->driver,
+                $status,
+                $order->order_number,
+                [
+                    'type' => 'order.status',
+                    'meta' => [
+                        'order_id' => $order->id,
+                        'status' => $status,
+                    ],
+                ]
+            );
+        }
+
+        // Notify all distinct store owners participating in this order
+        $storeOwners = $order->storeSplits
+            ->pluck('store.owner')
+            ->filter()
+            ->unique('id');
+
+        foreach ($storeOwners as $storeOwner) {
+            if ($storeOwner->id !== $order->customer_id) {
                 $this->notificationService->sendOrderNotification(
                     $storeOwner,
                     $status,
-                    $order->order_number
+                    $order->order_number,
+                    [
+                        'type' => 'order.status',
+                        'meta' => [
+                            'order_id' => $order->id,
+                            'status' => $status,
+                        ],
+                    ]
                 );
             }
         }
