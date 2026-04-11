@@ -3,7 +3,7 @@ import axios from 'axios';
 // نفس أصل الصفحة (مثلاً php artisan serve) — تجنب localhost:80 الخاطئ.
 // يمكن تجاوزه بـ VITE_API_URL عند فصل الفرونت عن الباك.
 const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
-
+// const API_URL = 'https://webnova.fun/api/v1';
 const api = axios.create({
     baseURL: API_URL,
     headers: {
