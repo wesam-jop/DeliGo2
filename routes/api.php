@@ -6,9 +6,11 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\DriverController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\NotificationPreferenceController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StoreController;
@@ -153,11 +155,26 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
         Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
         Route::post('/{notification}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/{notification}/open', [NotificationController::class, 'markAsOpened']);
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::get('/topic', [NotificationController::class, 'getTopic']);
         Route::post('/topic', [NotificationController::class, 'updateTopic']);
         Route::post('/test', [NotificationController::class, 'sendTest']);
         Route::get('/settings', [NotificationController::class, 'getSettings']);
+        Route::get('/analytics', [NotificationController::class, 'analytics']);
+        
+        // Notification preferences
+        Route::get('/preferences', [NotificationPreferenceController::class, 'get']);
+        Route::put('/preferences', [NotificationPreferenceController::class, 'update']);
+        Route::post('/preferences/reset', [NotificationPreferenceController::class, 'reset']);
+    });
+
+    // Device routes (for push notifications)
+    Route::prefix('devices')->middleware('auth:sanctum')->group(function () {
+        Route::get('/', [DeviceController::class, 'index']);
+        Route::post('/register', [DeviceController::class, 'register']);
+        Route::post('/unregister', [DeviceController::class, 'unregister']);
+        Route::post('/unregister-all', [DeviceController::class, 'unregisterAll']);
     });
 
     // Admin routes

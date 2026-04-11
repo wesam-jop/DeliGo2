@@ -40,6 +40,9 @@ export const adminApi = {
     createGovernorate: (data) => api.post('admin/locations/governorates', data),
     createArea: (data) => api.post('admin/locations/areas', data),
     broadcastNotification: (data) => api.post('admin/notifications/broadcast', data),
+    
+    // Chat
+    startConversationWithUser: (userId) => api.post('chat/conversations/start-with-role', { user_id: userId }),
 };
 
 export default api;

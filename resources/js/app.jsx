@@ -3,7 +3,7 @@ import '../css/app.css';
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './Contexts/AuthContext';
 import { CartProvider } from './Contexts/CartContext';
 import { ToastProvider } from './Components/ToastNotifications';
@@ -282,11 +282,18 @@ const App = () => (
  * Component that activates ntfy polling after login
  */
 const AppWithNtfy = () => {
-    const { token } = useAuth();
-    
+    const { token, user } = useAuth();
+    const navigate = useNavigate();
+
     // تفعيل استقبال الإشعارات عند تسجيل الدخول
-    useNtfy();
-    
+    useNtfy(user?.ntfy_topic, {
+        enabled: false, // معطل مؤقتاً لأن ntfy.sh عنده rate limits
+        // enabled: !!user?.ntfy_topic, // فعّل هذا لما يكون عندك ntfy server خاص
+        navigate: navigate,
+        playSound: true,
+        pollInterval: 30000, // 30 ثانية
+    });
+
     return <AppRoutes />;
 };
 
