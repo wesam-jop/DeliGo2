@@ -192,27 +192,8 @@ class ChatService
                 'attachments' => $attachments,
             ]);
 
-            // Send push notifications to other participants
-            $notificationService = app(NotificationService::class);
-            $participants = $conversation->activeUsers()->where('users.id', '!=', $sender->id)->get();
-
-            $senderDisplayName = $sender->name;
-            if ($sender->role === 'store_owner' && $sender->store) {
-                $senderDisplayName = $sender->store->name;
-            }
-
-            foreach ($participants as $recipient) {
-                $notificationService->sendToUser(
-                    $recipient,
-                    '💬 رسالة جديدة من ' . $senderDisplayName,
-                    substr($message, 0, 100),
-                    [
-                        'click' => url("/conversations/{$conversation->id}"),
-                        'priority' => 5,
-                        'tags' => ['speech_balloon'],
-                    ]
-                );
-            }
+            // Dispatch event - notifications handled by SendMessageNotification listener
+            event(new MessageSent($chatMessage, $sender));
 
             return $chatMessage;
         });

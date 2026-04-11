@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
-
+// const API_URL = 'https://webnova.fun/api/v1';
 const api = axios.create({
     baseURL: API_URL,
     headers: {
@@ -40,6 +40,9 @@ export const adminApi = {
     createGovernorate: (data) => api.post('admin/locations/governorates', data),
     createArea: (data) => api.post('admin/locations/areas', data),
     broadcastNotification: (data) => api.post('admin/notifications/broadcast', data),
+    
+    // Chat
+    startConversationWithUser: (userId) => api.post('chat/conversations/start-with-role', { user_id: userId }),
 };
 
 export default api;

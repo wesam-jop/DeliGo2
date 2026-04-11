@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Users, Phone, Mail, User, Shield, Trash2, AlertTriangle } from 'lucide-react';
+import { Search, Filter, Users, Phone, Mail, User, Shield, Trash2, AlertTriangle, MessageSquare } from 'lucide-react';
 import { adminApi } from '../../Services/adminApi';
 import UserDetailsModal from './UserDetailsModal';
 import Button from '../../Components/Button';
+import { useNavigate } from 'react-router-dom';
 
 
 const AdminUsers = () => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +57,18 @@ const AdminUsers = () => {
     const handleViewDetails = (user) => {
         setSelectedUser(user);
         setShowModal(true);
+    };
+
+    const handleOpenChat = async (user) => {
+        try {
+            const response = await adminApi.startConversationWithUser(user.id);
+            if (response.data.data?.conversation) {
+                navigate('/dashboard/chat');
+            }
+        } catch (error) {
+            console.error('Error starting conversation:', error);
+            alert('حدث خطأ أثناء فتح المحادثة');
+        }
     };
 
     const filteredUsers = users.filter(user => {
@@ -234,6 +248,16 @@ const AdminUsers = () => {
                                         </td>
                                         <td className="py-4">
                                             <div className="flex gap-2">
+                                                <Button variant="unstyled"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOpenChat(user);
+                                                    }}
+                                                    className="p-2 bg-slate-100 text-slate-600 rounded-xl hover:bg-emerald-100 hover:text-emerald-600 transition-all"
+                                                    title="فتح محادثة"
+                                                >
+                                                    <MessageSquare size={18} />
+                                                </Button>
                                                 <Button variant="unstyled"
                                                     onClick={(e) => {
                                                         e.stopPropagation();

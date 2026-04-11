@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Conversation;
+use App\Models\Order;
+use App\Policies\ConversationPolicy;
+use App\Policies\OrderPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register policies
+        Gate::policy(Order::class, OrderPolicy::class);
+        Gate::policy(Conversation::class, ConversationPolicy::class);
     }
 }

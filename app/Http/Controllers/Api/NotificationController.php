@@ -79,10 +79,85 @@ class NotificationController extends ApiController
     public function getSettings(Request $request): JsonResponse
     {
         $user = $request->user();
+        $preferences = $user->notificationPreferences;
 
         return $this->success([
             'topic' => $user->ntfy_topic,
             'notifications_enabled' => $user->ntfy_topic !== null,
+            'preferences' => [
+                'channels' => [
+                    'in_app' => $preferences->enable_in_app,
+                    'push' => $preferences->enable_push,
+                    'whatsapp' => $preferences->enable_whatsapp,
+                ],
+                'types' => [
+                    'order_updates' => $preferences->order_updates,
+                    'message_updates' => $preferences->message_updates,
+                    'marketing_messages' => $preferences->marketing_messages,
+                ],
+                'quiet_hours' => $preferences->getQuietHoursFormatted(),
+            ],
+        ]);
+    }
+
+    /**
+     * Mark a notification as opened.
+     *
+     * POST /api/v1/notifications/{notification}/open
+     */
+    public function markAsOpened(Request $request, string $notification): JsonResponse
+    {
+        /** @var DatabaseNotification|null $notificationModel */
+        $notificationModel = $request->user()
+            ->notifications()
+            ->where('id', $notification)
+            ->first();
+
+        if (!$notificationModel) {
+            return $this->error('Notification not found', 404);
+        }
+
+        // Update opened_at timestamp
+        $data = json_decode($notificationModel->data, true);
+        $data['opened_at'] = now()->toIso8601String();
+        
+        $notificationModel->forceFill([
+            'data' => json_encode($data, JSON_UNESCAPED_UNICODE),
+            'opened_at' => now(),
+        ])->save();
+
+        // Also mark as read if not already
+        if ($notificationModel->read_at === null) {
+            $notificationModel->markAsRead();
+        }
+
+        return $this->success(null, 'Notification marked as opened');
+    }
+
+    /**
+     * Get notification analytics for user.
+     *
+     * GET /api/v1/notifications/analytics
+     */
+    public function analytics(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        $totalNotifications = $user->notifications()->count();
+        $unreadNotifications = $user->unreadNotifications()->count();
+        $openedNotifications = $user->notifications()
+            ->whereNotNull('opened_at')
+            ->count();
+
+        $openRate = $totalNotifications > 0 
+            ? round(($openedNotifications / $totalNotifications) * 100, 2) 
+            : 0;
+
+        return $this->success([
+            'total' => $totalNotifications,
+            'unread' => $unreadNotifications,
+            'opened' => $openedNotifications,
+            'open_rate' => $openRate,
         ]);
     }
 

@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, Package, Clock, CheckCircle, AlertCircle, ShoppingBag } from 'lucide-react';
-import { storeOwnerApi } from '../../Services/storeApi';
+import { useNavigate } from 'react-router-dom';
+import {
+    getNotifications,
+    getUnreadCount,
+    markAsRead,
+    markAllAsRead,
+    markAsOpened,
+    handleDeepLink
+} from '../../Services/NotificationService';
 import Button from '../Button';
 
 
 const NotificationsDropdown = () => {
+    const navigate = useNavigate();
     const [showDropdown, setShowDropdown] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -12,73 +21,21 @@ const NotificationsDropdown = () => {
 
     useEffect(() => {
         fetchNotifications();
+        fetchUnreadCount();
         // Poll for new notifications every 30 seconds
-        const interval = setInterval(fetchNotifications, 30000);
+        const interval = setInterval(() => {
+            fetchNotifications();
+            fetchUnreadCount();
+        }, 30000);
         return () => clearInterval(interval);
     }, []);
 
     const fetchNotifications = async () => {
         try {
             setLoading(true);
-            // Fetch recent orders to use as notifications
-            const response = await storeOwnerApi.getOrders({ limit: 20 });
-            const orders = response.data.data?.data || response.data.data || [];
-            
-            // Convert orders to notifications
-            const orderNotifications = orders.map(order => {
-                let type = 'info';
-                let icon = Bell;
-                let message = '';
-
-                switch (order.status) {
-                    case 'pending':
-                        type = 'warning';
-                        icon = Clock;
-                        message = `طلب جديد #${order.id} بانتظار القبول`;
-                        break;
-                    case 'confirmed':
-                        type = 'info';
-                        icon = CheckCircle;
-                        message = `تم قبول طلب #${order.id}`;
-                        break;
-                    case 'preparing':
-                        type = 'info';
-                        icon = Package;
-                        message = `طلب #${order.id} قيد التحضير`;
-                        break;
-                    case 'ready':
-                        type = 'success';
-                        icon = CheckCircle;
-                        message = `طلب #${order.id} جاهز للاستلام`;
-                        break;
-                    case 'delivered':
-                    case 'completed':
-                        type = 'success';
-                        icon = CheckCircle;
-                        message = `تم تسليم طلب #${order.id} بنجاح`;
-                        break;
-                    case 'cancelled':
-                        type = 'error';
-                        icon = AlertCircle;
-                        message = `تم إلغاء طلب #${order.id}`;
-                        break;
-                    default:
-                        message = `تحديث على طلب #${order.id}`;
-                }
-
-                return {
-                    id: order.id,
-                    type,
-                    icon,
-                    message,
-                    order,
-                    created_at: order.created_at,
-                    read: order.status !== 'pending', // Pending orders are unread
-                };
-            });
-
-            setNotifications(orderNotifications);
-            setUnreadCount(orderNotifications.filter(n => !n.read).length);
+            const response = await getNotifications(1, false, 20);
+            const data = response.data?.data || response.data || [];
+            setNotifications(data);
         } catch (error) {
             console.error('Error fetching notifications:', error);
         } finally {
@@ -86,14 +43,54 @@ const NotificationsDropdown = () => {
         }
     };
 
-    const markAsRead = (notificationId) => {
-        setNotifications(prev => prev.map(n => 
+    const fetchUnreadCount = async () => {
+        try {
+            const count = await getUnreadCount();
+            setUnreadCount(count);
+        } catch (error) {
+            console.error('Error fetching unread count:', error);
+        }
+    };
+
+    const handleNotificationClick = async (notification) => {
+        // Mark as read
+        markAsRead(notification.id);
+        
+        // Mark as opened
+        markAsOpened(notification.id);
+
+        // Extract action URL
+        const data = notification.data || {};
+        const actionUrl = data.click || data.action_url;
+
+        if (actionUrl) {
+            // Navigate using deep link
+            handleDeepLink(actionUrl, navigate);
+        } else if (notification.type === 'order.status' || notification.type?.startsWith('order.')) {
+            // Fallback: Navigate to order if it's an order notification
+            const orderId = data.meta?.order_id;
+            if (orderId) {
+                navigate(`/orders/${orderId}`);
+            }
+        }
+
+        // Update UI
+        setNotifications(prev => prev.map(n =>
+            n.id === notification.id ? { ...n, read: true } : n
+        ));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+    };
+
+    const markAsReadLocal = (notificationId) => {
+        markAsRead(notificationId);
+        setNotifications(prev => prev.map(n =>
             n.id === notificationId ? { ...n, read: true } : n
         ));
         setUnreadCount(prev => Math.max(0, prev - 1));
     };
 
-    const markAllAsRead = () => {
+    const markAllAsReadLocal = async () => {
+        await markAllAsRead();
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         setUnreadCount(0);
     };
@@ -109,14 +106,40 @@ const NotificationsDropdown = () => {
         return `منذ ${Math.floor(diffInSeconds / 86400)} يوم`;
     };
 
-    const getTypeStyles = (type) => {
-        const styles = {
-            warning: 'bg-amber-50 border-amber-200 text-amber-700',
-            info: 'bg-blue-50 border-blue-200 text-blue-700',
-            success: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-            error: 'bg-red-50 border-red-200 text-red-700',
-        };
-        return styles[type] || styles.info;
+    const getNotificationIcon = (notification) => {
+        const data = notification.data || {};
+        const type = notification.type || '';
+        
+        if (type.includes('order')) {
+            return Package;
+        } else if (type.includes('message') || type.includes('chat')) {
+            return ShoppingBag;
+        } else if (type.includes('broadcast')) {
+            return Bell;
+        }
+        
+        // Check priority
+        const priority = data.priority;
+        if (priority >= 5) return AlertCircle;
+        if (priority >= 3) return Bell;
+        return Clock;
+    };
+
+    const getTypeStyles = (notification) => {
+        const data = notification.data || {};
+        const type = notification.type || '';
+        const priority = data.priority;
+        
+        if (type.includes('order.cancelled')) {
+            return 'bg-red-50 border-red-200 text-red-700';
+        }
+        if (type.includes('order.delivered') || type.includes('order.completed')) {
+            return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+        }
+        if (priority >= 5) {
+            return 'bg-amber-50 border-amber-200 text-amber-700';
+        }
+        return 'bg-blue-50 border-blue-200 text-blue-700';
     };
 
     return (
@@ -138,11 +161,11 @@ const NotificationsDropdown = () => {
             {showDropdown && (
                 <>
                     {/* Backdrop */}
-                    <div 
-                        className="fixed inset-0 z-40" 
+                    <div
+                        className="fixed inset-0 z-40"
                         onClick={() => setShowDropdown(false)}
                     />
-                    
+
                     {/* Dropdown Content */}
                     <div className="absolute left-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
                         {/* Header */}
@@ -153,7 +176,7 @@ const NotificationsDropdown = () => {
                             </div>
                             {unreadCount > 0 && (
                                 <Button variant="unstyled"
-                                    onClick={markAllAsRead}
+                                    onClick={markAllAsReadLocal}
                                     className="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
                                 >
                                     <Check size={14} />
@@ -178,28 +201,37 @@ const NotificationsDropdown = () => {
                             ) : (
                                 <div className="divide-y divide-slate-50">
                                     {notifications.map((notification) => {
-                                        const Icon = notification.icon;
+                                        const Icon = getNotificationIcon(notification);
+                                        const data = notification.data || {};
+                                        const title = data.title || notification.type;
+                                        const message = data.message || '';
+
                                         return (
                                             <div
                                                 key={notification.id}
                                                 className={`p-4 hover:bg-slate-50 transition-all cursor-pointer ${
-                                                    !notification.read ? 'bg-slate-50/50' : ''
+                                                    !notification.read_at ? 'bg-slate-50/50' : ''
                                                 }`}
-                                                onClick={() => markAsRead(notification.id)}
+                                                onClick={() => handleNotificationClick(notification)}
                                             >
                                                 <div className="flex items-start gap-3">
-                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getTypeStyles(notification.type)}`}>
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getTypeStyles(notification)}`}>
                                                         <Icon size={18} />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className={`text-sm ${!notification.read ? 'font-bold text-slate-900' : 'text-slate-600'}`}>
-                                                            {notification.message}
+                                                        {title && (
+                                                            <p className="font-bold text-slate-900 text-sm truncate">
+                                                                {title}
+                                                            </p>
+                                                        )}
+                                                        <p className={`text-sm ${!notification.read_at ? 'font-medium text-slate-900' : 'text-slate-600'}`}>
+                                                            {message}
                                                         </p>
                                                         <p className="text-xs text-slate-400 mt-1">
                                                             {getTimeAgo(notification.created_at)}
                                                         </p>
                                                     </div>
-                                                    {!notification.read && (
+                                                    {!notification.read_at && (
                                                         <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-1"></div>
                                                     )}
                                                 </div>
@@ -213,9 +245,15 @@ const NotificationsDropdown = () => {
                         {/* Footer */}
                         {notifications.length > 0 && (
                             <div className="p-3 border-t border-slate-100 bg-slate-50 text-center">
-                                <p className="text-xs text-slate-500">
-                                    {unreadCount > 0 ? `${unreadCount} إشعار غير مقروء` : 'جميع الإشعارات مقروءة'}
-                                </p>
+                                <button
+                                    onClick={() => {
+                                        setShowDropdown(false);
+                                        navigate('/notifications');
+                                    }}
+                                    className="text-xs text-brand hover:underline font-bold"
+                                >
+                                    عرض كل الإشعارات
+                                </button>
                             </div>
                         )}
                     </div>

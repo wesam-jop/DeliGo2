@@ -1,182 +1,159 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../Contexts/AuthContext';
+import { handleDeepLink, markAsOpened, playNotificationSound } from '../Services/NotificationService';
+import { addToast } from '../Components/ToastNotifications';
 
 /**
- * طلب إذن إشعارات المتصفح (Browser Notification API)
- * يطلب الإذن إذا لم يكن قد مُنح أو رُفض مسبقاً
+ * useNtfy Hook - محسّن مع Polling
+ * 
+ * يتصل بخادم ntfy عبر Polling (لأن ntfy يستخدم NDJSON مش SSE)
+ * مع دعم: الصوت، الصامت، الروابط، الأزرار
  */
-export const requestNotificationPermission = async () => {
-    if (!('Notification' in window)) {
-        console.warn('[Notifications] Browser does not support notifications');
-        return 'unsupported';
-    }
 
-    if (Notification.permission === 'granted') {
-        return 'granted';
-    }
+export function useNtfy(topic, options = {}) {
+    const {
+        enabled = true,
+        baseUrl = 'https://ntfy.sh',
+        onNotification = null,
+        navigate = null,
+        playSound = true,
+        pollInterval = 15000, // 15 ثانية (لتجنب rate limit)
+    } = options;
 
-    if (Notification.permission === 'denied') {
-        console.warn('[Notifications] Permission denied by user');
-        return 'denied';
-    }
+    const pollRef = useRef(null);
+    const isMountedRef = useRef(false);
+    const lastMessageIdRef = useRef(null);
 
-    // طلب الإذن
-    try {
-        const permission = await Notification.requestPermission();
-        console.log('[Notifications] Permission:', permission);
-        return permission;
-    } catch (error) {
-        console.error('[Notifications] Error requesting permission:', error);
-        return 'error';
-    }
-};
+    const handleMessage = useCallback((data) => {
+        try {
+            const {
+                id,
+                title,
+                message,
+                tags = [],
+                priority = 3,
+                click,
+                type,
+                entity_id,
+                action_url,
+                sound_name,
+                silent,
+                media_url,
+                media_type,
+            } = data;
 
-/**
- * ntfy SSE Hook - استقبال الإشعارات لحظياً
- *
- * الميزات:
- * - طلب إذن الإشعارات عند أول دخول
- * - اتصال بـ ntfy عبر Polling
- * - عرض Toast Notification + Browser Notification
- * - تنقل تلقائي عند الضغط على الإشعار
- * - فتح Media Viewer إذا كان فيه وسائط
- */
-export const useNtfy = () => {
-    const navigate = useNavigate();
-    const { user, token } = useAuth(); // قراءة من AuthContext
-    const eventSourceRef = useRef(null);
-    const audioRef = useRef(null);
-    const lastIdRef = useRef(0);
-    const permissionRequestedRef = useRef(false);
+            const isSilent = silent === 'true' || silent === true;
 
-    /**
-     * عرض Browser Notification
-     */
-    const showBrowserNotification = useCallback((notification) => {
-        if (Notification.permission !== 'granted') return;
-
-        const browserNotification = new Notification(notification.title || 'إشعار جديد', {
-            body: notification.message || '',
-            icon: '/logo.png',
-            badge: '/logo.png',
-            tag: `notification-${notification.id}`,
-            requireInteraction: false,
-        });
-
-        // عند الضغط على الإشعار
-        browserNotification.onclick = () => {
-            window.focus();
-            handleNotificationClick(notification);
-            browserNotification.close();
-        };
-    }, []);
-
-    /**
-     * عرض Toast Notification
-     */
-    const showToast = useCallback((notification) => {
-        if (window.showNotificationToast) {
-            window.showNotificationToast({
-                title: notification.title || 'إشعار جديد',
-                message: notification.message || '',
-                media_url: notification.media_url,
-                media_type: notification.media_type,
-                onClick: () => handleNotificationClick(notification),
-            });
-        }
-        
-        // عرض Browser Notification أيضاً
-        showBrowserNotification(notification);
-    }, [showBrowserNotification]);
-
-    /**
-     * معالجة الضغط على الإشعار
-     */
-    const handleNotificationClick = useCallback((notification) => {
-        // 🔗 تنقل للرابط المحدد
-        if (notification.click) {
-            try {
-                const url = new URL(notification.click);
-                navigate(url.pathname + url.search);
-            } catch (e) {
-                console.error('Invalid click URL:', e);
+            // Play sound if enabled and not silent
+            if (playSound && !isSilent && sound_name) {
+                playNotificationSound(sound_name, isSilent);
             }
-        }
 
-        // 🖼️ فتح Media Viewer إذا كان فيه وسائط
-        if (notification.media_url) {
-            if (window.openMediaViewer) {
-                window.openMediaViewer(notification.media_url, notification.media_type);
+            // Build toast notification
+            const toastData = {
+                title: title || 'إشعار جديد',
+                message: message || '',
+                type,
+                priority,
+                media_url,
+                media_type,
+                action_url: action_url || click,
+                onClick: async () => {
+                    const url = action_url || click;
+
+                    if (id) {
+                        try {
+                            await markAsOpened(id);
+                        } catch (error) {
+                            console.error('فشل في تحديد الإشعار كمفتوح:', error);
+                        }
+                    }
+
+                    if (url) {
+                        handleDeepLink(url, navigate);
+                    }
+
+                    if (onNotification) {
+                        onNotification(data);
+                    }
+                },
+            };
+
+            addToast(toastData);
+
+            if (onNotification) {
+                onNotification(data);
             }
+
+        } catch (error) {
+            console.error('خطأ في معالجة الإشعار:', error);
         }
-    }, [navigate]);
+    }, [navigate, onNotification, playSound]);
+
+    const pollNotifications = useCallback(async () => {
+        if (!isMountedRef.current || !topic) return;
+
+        try {
+            const url = `${baseUrl}/${topic}/json`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                console.warn('⚠️ ntfy response not ok:', response.status);
+                return;
+            }
+
+            const text = await response.text();
+            if (!text.trim()) return;
+
+            // Parse NDJSON (each line is a JSON object)
+            const lines = text.trim().split('\n');
+            for (const line of lines) {
+                try {
+                    const data = JSON.parse(line);
+
+                    // Skip if we already processed this message
+                    if (lastMessageIdRef.current && data.id <= lastMessageIdRef.current) {
+                        continue;
+                    }
+
+                    lastMessageIdRef.current = data.id;
+                    handleMessage(data);
+                } catch (e) {
+                    // Skip invalid lines
+                }
+            }
+        } catch (error) {
+            console.error('❌ خطأ في جلب الإشعارات:', error);
+        }
+    }, [topic, baseUrl, handleMessage]);
 
     useEffect(() => {
-        // قراءة من AuthContext بدلاً من localStorage
-        if (!token || !user?.ntfy_topic) {
-            console.warn('[ntfy] No token or ntfy_topic available');
+        isMountedRef.current = true;
+
+        if (!enabled || !topic) {
             return;
         }
 
-        // طلب إذن الإشعارات (مرة وحدة فقط)
-        if (!permissionRequestedRef.current) {
-            permissionRequestedRef.current = true;
-            requestNotificationPermission();
-        }
+        console.log('✅ بدء استقبال الإشعارات للموضوع:', topic);
 
-        const ntfyBaseUrl = import.meta.env.VITE_NTFY_BASE_URL || 'https://ntfy.sh';
+        // Poll immediately
+        pollNotifications();
 
-        console.log('[ntfy] Connecting via SSE for:', user.ntfy_topic);
+        // Set up polling interval
+        pollRef.current = setInterval(pollNotifications, pollInterval);
 
-        // إنشاء Audio للإشعارات
-        audioRef.current = new Audio('/notification-sound.mp3');
-
-        // Server-Sent Events (SSE) - اتصال واحد مستمر بدون rate limiting
-        const eventSource = new EventSource(`${ntfyBaseUrl}/${user.ntfy_topic}/json`);
-        eventSourceRef.current = eventSource;
-
-        eventSource.onmessage = (event) => {
-            try {
-                const msg = JSON.parse(event.data);
-
-                // تجاهل رسائل الترحيب
-                if (msg.event === 'keepalive') return;
-
-                const notification = {
-                    id: msg.id,
-                    title: msg.title || 'إشعار جديد',
-                    message: msg.message || '',
-                    click: msg.click || null,
-                    media_url: msg.media_url || null,
-                    media_type: msg.media_type || null,
-                    meta: msg.meta || {},
-                };
-
-                console.log('[ntfy] Notification received:', notification);
-
-                // تشغيل صوت الإشعار
-                audioRef.current?.play().catch(() => {});
-
-                // عرض Toast + Browser Notification
-                showToast(notification);
-            } catch (e) {
-                console.error('[ntfy] Failed to parse notification:', e, event.data);
-            }
-        };
-
-        eventSource.onerror = (error) => {
-            if (eventSource.readyState === EventSource.CLOSED) {
-                console.log('[ntfy] Connection closed');
-            } else {
-                console.error('[ntfy] SSE connection error, reconnecting...', error);
-                // SSE بيحاول يعيد الاتصال تلقائياً
-            }
-        };
-
+        // Cleanup
         return () => {
-            console.log('[ntfy] Disconnecting SSE');
-            eventSource.close();
+            isMountedRef.current = false;
+            if (pollRef.current) {
+                clearInterval(pollRef.current);
+                pollRef.current = null;
+            }
         };
-    }, [user, token, navigate, showToast]);
-};
+    }, [topic, enabled, baseUrl, pollInterval, pollNotifications]);
+
+    return {
+        connected: enabled && !!topic,
+    };
+}
+
+export default useNtfy;

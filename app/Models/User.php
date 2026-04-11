@@ -256,4 +256,36 @@ class User extends Authenticatable
     {
         return $this->hasMany(Favorite::class);
     }
+
+    /**
+     * Get user's notification preferences.
+     */
+    public function notificationPreferences()
+    {
+        return $this->hasOne(NotificationPreference::class);
+    }
+
+    /**
+     * Get user's device tokens for push notifications.
+     */
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    /**
+     * Get user's notification logs.
+     */
+    public function notificationLogs()
+    {
+        return $this->hasMany(NotificationLog::class);
+    }
+
+    /**
+     * Get or create notification preferences.
+     */
+    public function getNotificationPreferencesAttribute()
+    {
+        return $this->notificationPreferences()->firstOrCreate([]);
+    }
 }
