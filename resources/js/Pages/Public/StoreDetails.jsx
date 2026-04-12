@@ -284,22 +284,6 @@ const StoreDetails = () => {
 
             {/* Subtle ad at bottom */}
             <AdOrchestrator placement="banner" variant="compact" autoPlayInterval={8000} />
-
-            {/* Floating Cart Button */}
-            {cartCount > 0 && (
-                <motion.div initial={{ y: 100 }} animate={{ y: 0 }}
-                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-                    <Link to="/cart">
-                        <Button variant="unstyled" className="bg-slate-900 text-white px-10 py-4 rounded-full flex items-center gap-4 shadow-2xl shadow-slate-400/30 hover:bg-brand transition-all">
-                            <div className="w-7 h-7 bg-white text-slate-900 rounded-full flex items-center justify-center font-black text-sm">
-                                {cartCount}
-                            </div>
-                            <span className="font-bold">عرض السلة</span>
-                            <span className="font-black">{cartTotal.toLocaleString()} $</span>
-                        </Button>
-                    </Link>
-                </motion.div>
-            )}
         </div>
     );
 };

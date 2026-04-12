@@ -32,16 +32,16 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // Authentication routes
     Route::post('/auth/register', [AuthController::class, 'register']);
-    Route::post('/auth/login', [AuthController::class, 'login']);
-    Route::post('/auth/otp/send/{phone}', [AuthController::class, 'sendOtp']);
-    Route::post('/auth/otp/verify', [AuthController::class, 'verifyOtp']);
-    Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp']); // Alias for mobile app compatibility
-    Route::post('/auth/otp/resend/{phone}', [AuthController::class, 'resendOtp']);
+    Route::post('/auth/login', [AuthController::class, 'login'])->middleware('rate.limit.login');
+    Route::post('/auth/otp/send/{phone}', [AuthController::class, 'sendOtp'])->middleware('rate.limit.send.otp');
+    Route::post('/auth/otp/verify', [AuthController::class, 'verifyOtp'])->middleware('rate.limit.otp');
+    Route::post('/auth/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('rate.limit.otp'); // Alias for mobile app compatibility
+    Route::post('/auth/otp/resend/{phone}', [AuthController::class, 'resendOtp'])->middleware('rate.limit.send.otp');
     Route::get('/auth/verify-email', [AuthController::class, 'verifyEmail']);
-    
+
     // Password reset flow
-    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('/auth/verify-otp-password', [AuthController::class, 'verifyOtpForPassword']);
+    Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('rate.limit.send.otp');
+    Route::post('/auth/verify-otp-password', [AuthController::class, 'verifyOtpForPassword'])->middleware('rate.limit.otp');
     Route::post('/auth/reset-password-after-otp', [AuthController::class, 'resetPasswordAfterOtp']);
     Route::get('/auth/reset-password', [AuthController::class, 'showResetForm']);
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);

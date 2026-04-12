@@ -35,6 +35,17 @@ return [
         'silent' => false,
     ],
 
+    'order_new_for_store' => [
+        'title' => '📦 طلب جديد في متجرك',
+        'message' => 'وصل طلب جديد رقم #{order_id} إلى متجرك',
+        'action_url' => '/orders/{order_id}',
+        'priority' => 'high',
+        'type' => 'order.new_for_store',
+        'channels' => ['in_app', 'push', 'whatsapp'],
+        'sound' => 'order_new.mp3',
+        'silent' => false,
+    ],
+
     'order_accepted' => [
         'title' => '✅ تم قبول طلبك',
         'message' => 'تم قبول طلبك رقم #{order_id} من قبل {driver_name}. سيتم تحضيره وتوصيله قريباً.',
@@ -130,6 +141,17 @@ return [
         'action_url' => '/chat/{conversation_id}',
         'priority' => 'medium',
         'type' => 'conversation.created',
+        'channels' => ['in_app', 'push'],
+        'sound' => 'message.mp3',
+        'silent' => false,
+    ],
+
+    'order_message' => [
+        'title' => '💬 رسالة جديدة على طلب',
+        'message' => 'رسالة جديدة من {sender_name} على طلب #{order_id}',
+        'action_url' => '/orders/{order_id}',
+        'priority' => 'medium',
+        'type' => 'order.message',
         'channels' => ['in_app', 'push'],
         'sound' => 'message.mp3',
         'silent' => false,

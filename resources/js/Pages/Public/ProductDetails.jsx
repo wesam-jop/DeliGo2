@@ -13,7 +13,7 @@ import AdOrchestrator from '../../Components/AdOrchestrator';
 const ProductDetails = () => {
     const { storeId, id: productId } = useParams();
     const { addToCart } = useCart();
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const [product, setProduct] = useState(null);
     const [store, setStore] = useState(null);
     const [similarProducts, setSimilarProducts] = useState([]);
@@ -128,7 +128,7 @@ const ProductDetails = () => {
     const handleShare = async () => {
         const shareData = {
             title: product?.name,
-            text: product?.description || `اطلب ${product?.name} من تطبيق DeliGo!`,
+            text: product?.description || `اطلب ${product?.name} من تطبيق mishwari!`,
             url: window.location.href,
         };
 
@@ -187,13 +187,13 @@ const ProductDetails = () => {
                         <span className="truncate">العودة لـ {store?.name || 'المتجر'}</span>
                     </Link>
                     <div className="flex items-center gap-2 md:gap-3">
-                        <Button variant="unstyled" 
+                        <Button variant="unstyled"
                             onClick={handleShare}
                             className="w-8 h-8 md:w-10 md:h-10 bg-slate-100 rounded-lg md:rounded-xl flex items-center justify-center text-slate-600 hover:bg-slate-200 transition-all relative"
                         >
                             <Share2 size={16} />
                             {showShareToast && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     className="absolute top-12 left-0 bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg whitespace-nowrap z-50 flex items-center gap-2"
@@ -203,12 +203,14 @@ const ProductDetails = () => {
                                 </motion.div>
                             )}
                         </Button>
-                        <Button variant="unstyled"
-                            onClick={handleToggleFavorite}
-                            className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all ${liked ? 'bg-red-50 text-red-500 shadow-sm shadow-red-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                        >
-                            <Heart size={16} fill={liked ? "currentColor" : "none"} className={isToggling ? 'animate-pulse' : ''} />
-                        </Button>
+                        {user?.role === 'customer' && (
+                            <Button variant="unstyled"
+                                onClick={handleToggleFavorite}
+                                className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center transition-all ${liked ? 'bg-red-50 text-red-500 shadow-sm shadow-red-100' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                            >
+                                <Heart size={16} fill={liked ? "currentColor" : "none"} className={isToggling ? 'animate-pulse' : ''} />
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -283,44 +285,48 @@ const ProductDetails = () => {
                         </motion.div>
 
                         <div className="p-6 md:p-8 bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 premium-shadow space-y-6 md:space-y-8">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <div className="text-center md:text-right">
-                                    <p className="text-slate-400 text-xs md:text-sm font-bold mb-1">السعر</p>
-                                    <div className="flex items-center justify-center md:justify-start gap-2">
-                                        <span className="text-xl md:text-2xl font-black text-brand">$</span>
-                                        <h2 className="text-3xl md:text-4xl font-black text-slate-900">
-                                            {(product.price * qty).toLocaleString()}
-                                        </h2>
+                            {user?.role === 'customer' && (
+                                <>
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                        <div className="text-center md:text-right">
+                                            <p className="text-slate-400 text-xs md:text-sm font-bold mb-1">السعر</p>
+                                            <div className="flex items-center justify-center md:justify-start gap-2">
+                                                <span className="text-xl md:text-2xl font-black text-brand">$</span>
+                                                <h2 className="text-3xl md:text-4xl font-black text-slate-900">
+                                                    {(product.price * qty).toLocaleString()}
+                                                </h2>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-center gap-4 md:gap-6 bg-slate-50 p-2 md:p-3 rounded-xl md:rounded-2xl border border-slate-100">
+                                            <Button variant="unstyled"
+                                                onClick={() => setQty(q => Math.max(1, q - 1))}
+                                                className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-lg md:rounded-xl flex items-center justify-center text-slate-900 hover:text-brand transition-all premium-shadow flex-shrink-0"
+                                            >
+                                                <Minus size={18} />
+                                            </Button>
+                                            <span className="font-black text-xl md:text-2xl w-8 text-center text-slate-900">{qty}</span>
+                                            <Button variant="unstyled"
+                                                onClick={() => setQty(q => q + 1)}
+                                                className="w-10 h-10 md:w-12 md:h-12 bg-brand text-white rounded-lg md:rounded-xl flex items-center justify-center hover:bg-brand-dark transition-all shadow-lg flex-shrink-0"
+                                            >
+                                                <Plus size={18} />
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center justify-center gap-4 md:gap-6 bg-slate-50 p-2 md:p-3 rounded-xl md:rounded-2xl border border-slate-100">
-                                    <Button variant="unstyled"
-                                        onClick={() => setQty(q => Math.max(1, q - 1))}
-                                        className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-lg md:rounded-xl flex items-center justify-center text-slate-900 hover:text-brand transition-all premium-shadow flex-shrink-0"
-                                    >
-                                        <Minus size={18} />
-                                    </Button>
-                                    <span className="font-black text-xl md:text-2xl w-8 text-center text-slate-900">{qty}</span>
-                                    <Button variant="unstyled"
-                                        onClick={() => setQty(q => q + 1)}
-                                        className="w-10 h-10 md:w-12 md:h-12 bg-brand text-white rounded-lg md:rounded-xl flex items-center justify-center hover:bg-brand-dark transition-all shadow-lg flex-shrink-0"
-                                    >
-                                        <Plus size={18} />
-                                    </Button>
-                                </div>
-                            </div>
 
-                            <Button variant="unstyled"
-                                onClick={handleAddToCart}
-                                disabled={!product.is_available || !isStoreOpen}
-                                className={`w-full py-4 md:py-6 rounded-2xl md:rounded-3xl font-black text-lg md:text-xl flex items-center justify-center gap-3 transition-all ${product.is_available && isStoreOpen
-                                    ? 'bg-brand text-white hover:bg-brand-dark shadow-xl md:shadow-2xl shadow-brand/30'
-                                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                    }`}
-                            >
-                                <ShoppingCart size={20} className="md:w-6 md:h-6" />
-                                {!isStoreOpen ? 'المتجر مغلق حالياً' : product.is_available ? 'إضافة إلى السلة' : 'غير متاح حالياً'}
-                            </Button>
+                                    <Button variant="unstyled"
+                                        onClick={handleAddToCart}
+                                        disabled={!product.is_available || !isStoreOpen}
+                                        className={`w-full py-4 md:py-6 rounded-2xl md:rounded-3xl font-black text-lg md:text-xl flex items-center justify-center gap-3 transition-all ${product.is_available && isStoreOpen
+                                            ? 'bg-brand text-white hover:bg-brand-dark shadow-xl md:shadow-2xl shadow-brand/30'
+                                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                            }`}
+                                    >
+                                        <ShoppingCart size={20} className="md:w-6 md:h-6" />
+                                        {!isStoreOpen ? 'المتجر مغلق حالياً' : product.is_available ? 'إضافة إلى السلة' : 'غير متاح حالياً'}
+                                    </Button>
+                                </>
+                            )}
                         </div>
 
                         {/* Store Info Mini Card */}

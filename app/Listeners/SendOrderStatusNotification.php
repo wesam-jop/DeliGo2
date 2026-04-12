@@ -26,7 +26,11 @@ class SendOrderStatusNotification implements ShouldQueue
         $order = $event->order->loadMissing(['customer', 'driver', 'storeSplits.store.owner']);
         $status = $event->status;
 
-        // Notify customer
+        // IMPORTANT: Only customer receives ALL order status changes
+        // Driver ONLY receives when order is ready for pickup
+        // Store owners are NOT notified here (they get notified on new order creation)
+
+        // 1. Always notify customer for ALL status changes
         if ($order->customer) {
             $this->notificationService->sendOrderNotification(
                 $order->customer,
@@ -42,8 +46,9 @@ class SendOrderStatusNotification implements ShouldQueue
             );
         }
 
-        // Notify driver if assigned
-        if ($order->driver && $status !== 'pending') {
+        // 2. Notify driver ONLY when order becomes ready for pickup
+        // (Driver gets new order availability from NotifyDriversOfNewOrder listener)
+        if ($order->driver && $status === 'ready') {
             $this->notificationService->sendOrderNotification(
                 $order->driver,
                 $status,
@@ -58,27 +63,7 @@ class SendOrderStatusNotification implements ShouldQueue
             );
         }
 
-        // Notify all distinct store owners participating in this order
-        $storeOwners = $order->storeSplits
-            ->pluck('store.owner')
-            ->filter()
-            ->unique('id');
-
-        foreach ($storeOwners as $storeOwner) {
-            if ($storeOwner->id !== $order->customer_id) {
-                $this->notificationService->sendOrderNotification(
-                    $storeOwner,
-                    $status,
-                    $order->order_number,
-                    [
-                        'type' => 'order.status',
-                        'meta' => [
-                            'order_id' => $order->id,
-                            'status' => $status,
-                        ],
-                    ]
-                );
-            }
-        }
+        // 3. Store owners are NOT notified here
+        // They receive notification when order is first created (NotifyStoresOfNewOrder)
     }
 }

@@ -28,6 +28,7 @@ const CustomerOrders = () => {
     const [filter, setFilter] = useState('all'); // all, active, completed, cancelled
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
+    const [cancellingOrder, setCancellingOrder] = useState(false);
 
     useEffect(() => {
         if (orderId) {
@@ -64,7 +65,9 @@ const CustomerOrders = () => {
     };
 
     const handleCancelOrder = async () => {
-        if (!selectedOrder || !cancelReason.trim()) return;
+        if (!selectedOrder || !cancelReason.trim() || cancellingOrder) return;
+
+        setCancellingOrder(true);
 
         try {
             await customerApi.cancelOrder(selectedOrder.id, { reason: cancelReason });
@@ -76,6 +79,8 @@ const CustomerOrders = () => {
         } catch (error) {
             console.error('Error cancelling order:', error);
             alert(error.response?.data?.message || 'حدث خطأ أثناء إلغاء الطلب');
+        } finally {
+            setCancellingOrder(false);
         }
     };
 
@@ -147,10 +152,20 @@ const CustomerOrders = () => {
                         {canCancelOrder(selectedOrder) && (
                             <Button variant="unstyled"
                                 onClick={() => setShowCancelModal(true)}
-                                className="px-4 py-2 bg-red-100 text-red-600 rounded-xl font-bold text-sm hover:bg-red-200 transition-all flex items-center gap-2"
+                                disabled={cancellingOrder}
+                                className="px-4 py-2 bg-red-100 text-red-600 rounded-xl font-bold text-sm hover:bg-red-200 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <XCircle size={16} />
-                                إلغاء الطلب
+                                {cancellingOrder ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                                        جاري الإلغاء...
+                                    </>
+                                ) : (
+                                    <>
+                                        <XCircle size={16} />
+                                        إلغاء الطلب
+                                    </>
+                                )}
                             </Button>
                         )}
                     </div>
@@ -310,16 +325,25 @@ const CustomerOrders = () => {
                             <div className="flex gap-3 mt-6">
                                 <Button variant="unstyled"
                                     onClick={handleCancelOrder}
-                                    className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all"
+                                    disabled={cancellingOrder}
+                                    className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    تأكيد الإلغاء
+                                    {cancellingOrder ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            جاري الإلغاء...
+                                        </>
+                                    ) : (
+                                        'تأكيد الإلغاء'
+                                    )}
                                 </Button>
                                 <Button variant="unstyled"
                                     onClick={() => {
                                         setShowCancelModal(false);
                                         setCancelReason('');
                                     }}
-                                    className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all"
+                                    disabled={cancellingOrder}
+                                    className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     تراجع
                                 </Button>

@@ -53,32 +53,51 @@ const NotificationsDropdown = () => {
     };
 
     const handleNotificationClick = async (notification) => {
-        // Mark as read
-        markAsRead(notification.id);
-        
-        // Mark as opened
-        markAsOpened(notification.id);
-
-        // Extract action URL
+        // Extract action URL from notification data
         const data = notification.data || {};
-        const actionUrl = data.click || data.action_url;
+        const actionUrl = data.action_url || data.click || null;
+
+        // Mark as read and opened
+        try {
+            await Promise.all([
+                markAsRead(notification.id),
+                markAsOpened(notification.id)
+            ]);
+        } catch (error) {
+            console.error('Error updating notification status:', error);
+        }
 
         if (actionUrl) {
             // Navigate using deep link
             handleDeepLink(actionUrl, navigate);
         } else if (notification.type === 'order.status' || notification.type?.startsWith('order.')) {
             // Fallback: Navigate to order if it's an order notification
-            const orderId = data.meta?.order_id;
+            const orderId = data.meta?.order_id || data.order_id;
             if (orderId) {
                 navigate(`/orders/${orderId}`);
+            } else {
+                // If no order ID, go to orders list
+                navigate('/orders');
+            }
+        } else if (notification.type?.startsWith('message.') || notification.type?.startsWith('conversation.')) {
+            // Fallback: Navigate to chat
+            const conversationId = data.meta?.conversation_id || data.conversation_id;
+            if (conversationId) {
+                navigate(`/chat/${conversationId}`);
+            } else {
+                navigate('/chat');
             }
         }
 
         // Update UI
         setNotifications(prev => prev.map(n =>
-            n.id === notification.id ? { ...n, read: true } : n
+            n.id === notification.id ? { ...n, read_at: new Date().toISOString() } : n
         ));
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        
+        // Update unread count
+        if (!notification.read_at) {
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        }
     };
 
     const markAsReadLocal = (notificationId) => {
@@ -167,7 +186,7 @@ const NotificationsDropdown = () => {
                     />
 
                     {/* Dropdown Content */}
-                    <div className="absolute left-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+                    <div className="absolute -left-20 mt-2 w-66 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
                         {/* Header */}
                         <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-brand to-rose-500 text-white">
                             <div className="flex items-center gap-2">

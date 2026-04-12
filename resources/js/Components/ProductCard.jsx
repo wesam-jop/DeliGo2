@@ -92,21 +92,23 @@ const ProductCard = ({ product, showStore = true }) => {
                     {/* Image */}
                     <div className={`h-40 bg-gradient-to-br ${gradient} relative`}>
                         {product?.image ? (
-                            <img 
-                                src={product.image} 
-                                alt={product.name} 
+                            <img
+                                src={product.image}
+                                alt={product.name}
                                 className="w-full h-full object-cover"
                             />
                         ) : null}
-                        <Button variant="unstyled" 
-                            onClick={handleFavoriteClick}
-                            className="absolute top-3 left-3 p-2.5 bg-white/80 backdrop-blur rounded-xl hover:bg-white transition-all"
-                        >
-                            <Heart 
-                                size={16} 
-                                className={isFavorite ? 'fill-red-500 text-red-500' : 'text-slate-400'} 
-                            />
-                        </Button>
+                        {user?.role === 'customer' && (
+                            <Button variant="unstyled"
+                                onClick={handleFavoriteClick}
+                                className="absolute top-3 left-3 p-2.5 bg-white/80 backdrop-blur rounded-xl hover:bg-white transition-all"
+                            >
+                                <Heart
+                                    size={16}
+                                    className={isFavorite ? 'fill-red-500 text-red-500' : 'text-slate-400'}
+                                />
+                            </Button>
+                        )}
                         {!isStoreOpen && (
                             <div className="absolute bottom-3 right-3 bg-red-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
                                 <Clock size={10} />
@@ -137,18 +139,20 @@ const ProductCard = ({ product, showStore = true }) => {
                                     <Star size={11} fill="currentColor" />
                                     {product?.rating || '5.0'}
                                 </span>
-                                <Button variant="unstyled" 
-                                    onClick={handleAddToCart}
-                                    disabled={!isStoreOpen}
-                                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-lg ${
-                                        isStoreOpen
-                                            ? 'bg-brand text-white hover:bg-brand-dark shadow-brand/20'
-                                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                                    }`}
-                                    title={!isStoreOpen ? 'المتجر مغلق' : 'أضف للسلة'}
-                                >
-                                    <Plus size={18} />
-                                </Button>
+                                {user?.role === 'customer' && (
+                                    <Button variant="unstyled"
+                                        onClick={handleAddToCart}
+                                        disabled={!isStoreOpen}
+                                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-lg ${
+                                            isStoreOpen
+                                                ? 'bg-brand text-white hover:bg-brand-dark shadow-brand/20'
+                                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                                        }`}
+                                        title={!isStoreOpen ? 'المتجر مغلق' : 'أضف للسلة'}
+                                    >
+                                        <Plus size={18} />
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>

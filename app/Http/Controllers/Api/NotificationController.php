@@ -118,11 +118,7 @@ class NotificationController extends ApiController
         }
 
         // Update opened_at timestamp
-        $data = json_decode($notificationModel->data, true);
-        $data['opened_at'] = now()->toIso8601String();
-        
         $notificationModel->forceFill([
-            'data' => json_encode($data, JSON_UNESCAPED_UNICODE),
             'opened_at' => now(),
         ])->save();
 

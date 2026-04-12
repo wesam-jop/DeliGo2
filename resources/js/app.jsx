@@ -9,6 +9,7 @@ import { CartProvider } from './Contexts/CartContext';
 import { ToastProvider } from './Components/ToastNotifications';
 import { MediaViewerProvider } from './Components/MediaViewer';
 import { useNtfy } from './hooks/useNtfy';
+import { usePollNotifications } from './hooks/usePollNotifications';
 
 // Layouts
 import DashboardLayout from './Layouts/DashboardLayout';
@@ -71,6 +72,7 @@ import AdminLocations from './Pages/Dashboards/AdminLocations';
 import AdminCategories from './Pages/Dashboards/AdminCategories';
 import AdminNotifications from './Pages/Dashboards/AdminNotifications';
 import AdminAds from './Pages/Dashboards/AdminAds';
+import NotificationRedirect from './Components/NotificationRedirect';
 
 // ============================
 // Route Guards
@@ -243,8 +245,14 @@ const AppRoutes = () => (
             
             {/* Legacy Routes - Redirect to role-specific dashboards */}
             <Route path="orders" element={<AdminOrders key="admin-orders" />} />
+            <Route path="orders/:orderId" element={<NotificationRedirect targetType="order" />} />
+            <Route path="orders/available" element={<NotificationRedirect targetType="orders-available" />} />
             <Route path="stores" element={<AdminStores key="admin-stores" />} />
+            <Route path="stores/:storeId" element={<NotificationRedirect targetType="store" />} />
             <Route path="drivers" element={<AdminDrivers key="admin-drivers-page" />} />
+            <Route path="drivers/:driverId" element={<NotificationRedirect targetType="driver" />} />
+            <Route path="chat/:conversationId" element={<Chat key="chat-conversation" />} />
+            <Route path="conversations/:conversationId" element={<NotificationRedirect targetType="chat" />} />
             <Route path="users" element={<AdminUsers key="admin-users" />} />
             <Route path="settings" element={<AdminSettings key="admin-settings" />} />
             <Route path="locations" element={<AdminLocations key="admin-locations" />} />
@@ -285,14 +293,16 @@ const AppWithNtfy = () => {
     const { token, user } = useAuth();
     const navigate = useNavigate();
 
-    // تفعيل استقبال الإشعارات عند تسجيل الدخول
+    // تفعيل استقبال الإشعارات عند تسجيل الدخول - شغال لكل المستخدمين
     useNtfy(user?.ntfy_topic, {
-        enabled: false, // معطل مؤقتاً لأن ntfy.sh عنده rate limits
-        // enabled: !!user?.ntfy_topic, // فعّل هذا لما يكون عندك ntfy server خاص
+        enabled: !!user?.ntfy_topic, // شغال لما يكون المستخدم مسجل الدخول وعندو topic
         navigate: navigate,
-        playSound: true,
-        pollInterval: 30000, // 30 ثانية
+        playSound: true, // صوت إجباري
+        pollInterval: 10000, // 10 ثواني - تحديث أسرع
     });
+
+    // Fallback: Poll notifications from API every 15 seconds for all logged-in users
+    usePollNotifications(!!token, navigate);
 
     return <AppRoutes />;
 };

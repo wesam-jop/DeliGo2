@@ -7,11 +7,13 @@ import { useAuth } from '../Contexts/AuthContext';
 import Logo from '../assets/images/logo2.png';
 import axios from 'axios';
 import AdOrchestrator from '../Components/AdOrchestrator';
+import Button from '../Components/Button';
 
 const MainLayout = () => {
-    const { getCartCount } = useCart();
+    const { getCartCount, getCartTotal } = useCart();
     const { token, user, logout } = useAuth();
     const cartCount = getCartCount();
+    const cartTotal = getCartTotal();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [unreadCount, setUnreadCount] = useState(0);
@@ -123,7 +125,7 @@ const MainLayout = () => {
                 <div className="container mx-auto px-6 flex items-center justify-between">
                     <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-brand to-rose-500 bg-clip-text text-transparent test flex items-center gap-2">
                         <span><img src={Logo} alt="" className='w-10 h-10 rounded-full' /></span>
-                        DeliGo
+                        mishwari
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-8 text-slate-600 font-medium">
@@ -156,7 +158,7 @@ const MainLayout = () => {
                                 className="bg-slate-100 rounded-full pr-10 pl-4 py-2 w-48 focus:w-64 focus:ring-2 focus:ring-brand/20 transition-all outline-none text-sm"
                             />
                         </form>
-                        {token && (
+                        {token && user?.role === 'customer' && (
                             <Link
                                 to={token || cartCount === 0 ? "/cart" : "#"}
                                 onClick={handleCartClick}
@@ -402,6 +404,25 @@ const MainLayout = () => {
                 <Outlet />
             </div>
 
+            {/* Global Floating Cart Button */}
+            {cartCount > 0 && user?.role === 'customer' && (
+                <motion.div
+                    initial={{ y: 100 }}
+                    animate={{ y: 0 }}
+                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"
+                >
+                    <Link to="/cart">
+                        <Button variant="unstyled" className="bg-slate-900 text-white px-10 py-4 rounded-full flex items-center gap-4 shadow-2xl shadow-slate-400/30 hover:bg-brand transition-all">
+                            <div className="w-7 h-7 bg-white text-slate-900 rounded-full flex items-center justify-center font-black text-sm">
+                                {cartCount}
+                            </div>
+                            <span className="font-bold">عرض السلة</span>
+                            <span className="font-black">{cartTotal.toLocaleString()} $</span>
+                        </Button>
+                    </Link>
+                </motion.div>
+            )}
+
             {/* Subtle Ad Banner between content and footer */}
             <AdOrchestrator placement="footer" variant="minimal" autoPlayInterval={7000} />
 
@@ -412,7 +433,7 @@ const MainLayout = () => {
                         <div className="space-y-4">
                             <h3 className="text-2xl font-bold text-white test flex gap-2 items-center">
                                 <span><img src={Logo} alt="" className='w-10 h-10 rounded-full' /></span>
-                                DeliGo
+                                mishwari
                             </h3>
                             <p className="text-sm leading-relaxed">
                                 منصتك الأولى لطلب المنتجات من أفضل المتاجر في منطقتك. سرعة في التوصيل وجودة في الخدمة.
@@ -451,7 +472,7 @@ const MainLayout = () => {
                         </div>
                     </div>
                     <div className="pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-                        &copy; {new Date().getFullYear()} DeliGo. جميع الحقوق محفوظة.
+                        &copy; {new Date().getFullYear()} mishwari. جميع الحقوق محفوظة.
                     </div>
                 </div>
             </footer>

@@ -44,5 +44,33 @@ class SendMessageNotification implements ShouldQueue
                 $conversation->id
             );
         }
+
+        // If this is an order conversation, also notify all admins
+        if ($conversation->type === Conversation::TYPE_ORDER && $conversation->order_id) {
+            $admins = User::where('role', 'admin')->get();
+            
+            foreach ($admins as $admin) {
+                // Don't notify admin if they're the sender or already a participant
+                if ($admin->id === $sender->id || $recipients->contains('id', $admin->id)) {
+                    continue;
+                }
+
+                $this->notificationService->sendChatNotification(
+                    $admin,
+                    $sender->name,
+                    $message->message ?? $message->type . ' message',
+                    $conversation->id,
+                    [
+                        'type' => 'order.message',
+                        'entity_type' => 'order',
+                        'entity_id' => $conversation->order_id,
+                        'meta' => [
+                            'order_id' => $conversation->order_id,
+                            'conversation_id' => $conversation->id,
+                        ],
+                    ]
+                );
+            }
+        }
     }
 }

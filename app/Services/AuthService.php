@@ -16,7 +16,7 @@ class AuthService
     /**
      * OTP expiry time in minutes
      */
-    const OTP_EXPIRY_MINUTES = 1440; // 24 hours for link verification
+    const OTP_EXPIRY_MINUTES = 10; // 10 minutes for security
 
     /**
      * OTP code length (not used anymore, using token)
@@ -136,10 +136,10 @@ class AuthService
         $whatsappMessage = "أهلاً بك في DeliGo \nرمز التحقق الخاص بك هو: {$code}\nصالح لمدة " . self::OTP_EXPIRY_MINUTES . " دقيقة.";
         $this->whatsapp->sendMessage($normalizedPhone, $whatsappMessage);
 
-        // Log OTP code for testing
+        // Log OTP code generation (without exposing the actual code for security)
         \Log::info('🔑 OTP Code Generated', [
             'phone' => $normalizedPhone,
-            'code' => $code,
+            'code' => '****', // Code hidden for security
             'expires_at' => now()->addMinutes(self::OTP_EXPIRY_MINUTES)->format('Y-m-d H:i:s'),
         ]);
 
