@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\DispatchNotificationGroupJob;
 use App\Jobs\RetryFailedNotificationJob;
 use App\Jobs\SendBroadcastNotificationChunkJob;
 use App\Models\DeviceToken;
@@ -819,13 +820,19 @@ class NotificationService
      */
     public function sendOrderNotification(User $user, string $status, string $orderNumber, array $extraData = []): bool
     {
+        // Use custom template for store owners receiving new orders
         $templateKey = NotificationTemplateService::getTemplateForOrderStatus($status);
+        
+        // Override template for store owners receiving new orders
+        if (($extraData['type'] ?? '') === 'order.new_for_store') {
+            $templateKey = 'order_new_for_store';
+        }
 
-        $data = array_merge([
+        $data = [
             'order_id' => $orderNumber,
-            'entity_type' => 'order',
-            'entity_id' => $extraData['meta']['order_id'] ?? null,
-        ], $extraData);
+            'entity_type' => $extraData['entity_type'] ?? 'order',
+            'entity_id' => $extraData['meta']['order_id'] ?? $extraData['entity_id'] ?? null,
+        ];
 
         return $this->sendFromTemplate($user, $templateKey, $data, $extraData);
     }
@@ -833,25 +840,34 @@ class NotificationService
     /**
      * Send chat message notification
      */
-    public function sendChatNotification(User $recipient, string $senderName, string $messageContent, int $conversationId): bool
+    public function sendChatNotification(User $recipient, string $senderName, string $messageContent, int $conversationId, array $extraOptions = []): bool
     {
+        $templateKey = 'message_received';
+        
+        // Use order_message template for order messages
+        if (($extraOptions['type'] ?? '') === 'order.message') {
+            $templateKey = 'order_message';
+        }
+
         $data = [
             'sender_name' => $senderName,
             'conversation_id' => $conversationId,
-            'entity_type' => 'conversation',
-            'entity_id' => $conversationId,
+            'entity_type' => $extraOptions['entity_type'] ?? 'conversation',
+            'entity_id' => $extraOptions['entity_id'] ?? $conversationId,
         ];
+
+        $options = array_merge([
+            'message' => "{$senderName}: " . substr($messageContent, 0, 100),
+            'meta' => [
+                'conversation_id' => $conversationId,
+            ],
+        ], $extraOptions);
 
         return $this->sendFromTemplate(
             $recipient,
-            'message_received',
+            $templateKey,
             $data,
-            [
-                'message' => "{$senderName}: " . substr($messageContent, 0, 100),
-                'meta' => [
-                    'conversation_id' => $conversationId,
-                ],
-            ]
+            $options
         );
     }
 

@@ -16,7 +16,7 @@ export function useNtfy(topic, options = {}) {
         onNotification = null,
         navigate = null,
         playSound = true,
-        pollInterval = 15000, // 15 ثانية (لتجنب rate limit)
+        pollInterval = 10000, // 10 seconds - faster polling
     } = options;
 
     const pollRef = useRef(null);
@@ -41,11 +41,9 @@ export function useNtfy(topic, options = {}) {
                 media_type,
             } = data;
 
-            const isSilent = silent === 'true' || silent === true;
-
-            // Play sound if enabled and not silent
-            if (playSound && !isSilent && sound_name) {
-                playNotificationSound(sound_name, isSilent);
+            // FORCE sound playback - mandatory for all users
+            if (playSound && sound_name) {
+                playNotificationSound(sound_name, false);
             }
 
             // Build toast notification
@@ -60,6 +58,7 @@ export function useNtfy(topic, options = {}) {
                 onClick: async () => {
                     const url = action_url || click;
 
+                    // Mark as opened first
                     if (id) {
                         try {
                             await markAsOpened(id);
@@ -68,17 +67,22 @@ export function useNtfy(topic, options = {}) {
                         }
                     }
 
+                    // Then navigate if there's a URL
                     if (url) {
                         handleDeepLink(url, navigate);
                     }
 
+                    // Call custom callback if provided
                     if (onNotification) {
                         onNotification(data);
                     }
                 },
             };
 
+            // Show the toast notification
             addToast(toastData);
+
+            console.log('[useNtfy] Notification received:', title, message);
 
             if (onNotification) {
                 onNotification(data);

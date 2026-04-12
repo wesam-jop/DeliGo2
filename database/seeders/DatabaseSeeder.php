@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             UserSeeder::class,
             DemoDataSeeder::class,
-            AdvancedDataSeeder::class,
+            // AdvancedDataSeeder::class,
         ]);
     }
 }

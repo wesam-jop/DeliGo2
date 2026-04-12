@@ -178,9 +178,20 @@ export function handleDeepLink(actionUrl, navigate) {
     if (!actionUrl) return;
 
     // Remove mobile scheme if present (deligo://)
-    const path = actionUrl
+    let path = actionUrl
         .replace('deligo://', '/')
         .replace(/^https?:\/\/[^\/]+/, '');
+
+    // Ensure path starts with /
+    if (!path.startsWith('/')) {
+        path = '/' + path;
+    }
+
+    // Clean up the path - remove trailing slashes and normalize
+    path = path.replace(/\/+$/, '').replace(/\/+/g, '/');
+
+    // Log for debugging
+    console.log('[DeepLink] Navigating to:', path);
 
     // Navigate using React Router
     if (navigate) {
@@ -194,20 +205,54 @@ export function handleDeepLink(actionUrl, navigate) {
 // ===== Sound Manager =====
 
 /**
- * Play notification sound
- * 
+ * Play notification sound - MANDATORY FOR ALL USERS
+ *
  * @param {string} soundName - Sound filename (e.g., 'order_new.mp3')
- * @param {boolean} silent - Whether to play silently
+ * @param {boolean} silent - Whether to play silently (ignored for mandatory mode)
  */
 export function playNotificationSound(soundName, silent = false) {
-    if (silent || !soundName) return;
+    // Force sound even if silent flag is true
+    const forcePlay = true; // Mandatory mode
+    
+    if (!soundName) {
+        soundName = 'default.mp3';
+    }
 
-    // Web Audio API
+    // Try HTML5 Audio first
     const soundPath = `/sounds/${soundName}`;
     const audio = new Audio(soundPath);
-    audio.play().catch(error => {
-        console.warn('Failed to play notification sound:', error);
-    });
+    audio.volume = 0.7; // 70% volume - audible but not jarring
+
+    const playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.catch(error => {
+            console.warn('[NotificationService] Audio play failed, using Web Audio API fallback:', error);
+            
+            // Fallback: Generate a beep sound using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Pleasant beep sound
+                oscillator.frequency.value = 800; // 800 Hz
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.3; // 30% volume
+                
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.stop();
+                    audioContext.close();
+                }, 200); // 200ms beep
+            } catch (webAudioError) {
+                console.error('[NotificationService] Web Audio API also failed:', webAudioError);
+            }
+        });
+    }
 }
 
 // ===== Export All =====

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\DriverRegistered;
+use App\Events\StoreRegistered;
 use App\Models\Area;
 use App\Models\Governorate;
 use App\Models\Order;
@@ -116,6 +118,9 @@ class AdminController extends ApiController
                 'is_approved' => true,
                 'rejection_reason' => null,
             ]);
+
+            // Dispatch event to notify admins
+            event(new StoreRegistered($store->owner));
         }
 
         return $this->success(null, 'Store approved successfully');
@@ -160,6 +165,9 @@ class AdminController extends ApiController
             'is_approved' => true,
             'rejection_reason' => null,
         ]);
+
+        // Dispatch event to notify admins
+        event(new DriverRegistered($driver));
 
         return $this->success(null, 'Driver approved successfully');
     }

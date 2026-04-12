@@ -243,7 +243,7 @@ const Home = () => {
                 <div className="text-center max-w-2xl mx-auto mb-20 space-y-4">
                     <h2 className="text-4xl font-black flex gap-2 justify-center">
                         <span>لماذا تختار </span>
-                        <span className="test text-brand ">DeliGo</span>
+                        <span className="test text-brand ">mishwari</span>
                         <span><img src={Logo} alt="" className='w-10 h-10 rounded-full'/></span> ؟
                     </h2>
                     <p className="text-slate-500 font-bold">نحن لسنا مجرد تطبيق توصيل، نحن رفيقك الموثوق لتلبية جميع احتياجاتك اليومية بسلاسة تامة.</p>
@@ -273,7 +273,7 @@ const Home = () => {
             {/* CTA Section */}
             {/* <section className="container mx-auto px-6">
                 <div className="bg-gradient-to-br from-brand to-brand-dark rounded-[4rem] p-12 lg:p-24 text-center text-white relative overflow-hidden shadow-2xl shadow-brand/20">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -mr-32 -mt-32 uppercase tracking-tighter test font-black text-4xl p-20 select-none pointer-events-none opacity-20">DeliGo توصيل</div>
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -mr-32 -mt-32 uppercase tracking-tighter test font-black text-4xl p-20 select-none pointer-events-none opacity-20">mishwari توصيل</div>
 
                     <div className="relative z-10 max-w-2xl mx-auto">
                         <h2 className="text-4xl lg:text-5xl font-black mb-8 leading-tight test">هل أنت مستعد لبدء الطلب؟</h2>
