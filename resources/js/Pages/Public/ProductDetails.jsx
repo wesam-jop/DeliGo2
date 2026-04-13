@@ -128,7 +128,7 @@ const ProductDetails = () => {
     const handleShare = async () => {
         const shareData = {
             title: product?.name,
-            text: product?.description || `اطلب ${product?.name} من تطبيق mishwari!`,
+            text: product?.description || `اطلب ${product?.name} من تطبيق DeliGo!`,
             url: window.location.href,
         };
 

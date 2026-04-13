@@ -85,7 +85,7 @@ const Contact = () => {
                             </div>
                             <div>
                                 <h3 className="font-black text-slate-900 mb-1 text-lg">البريد الإلكتروني</h3>
-                                <p className="text-slate-500 font-bold mb-1">support@mishwari.com</p>
+                                <p className="text-slate-500 font-bold mb-1">support@DeliGo.com</p>
                                 <p className="text-slate-400 text-sm font-medium">سنرد عليك خلال 2-4 ساعات عمل</p>
                             </div>
                         </motion.div>
