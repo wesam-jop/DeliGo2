@@ -134,7 +134,7 @@ const DashboardLayout = () => {
                         {/* Logo */}
                         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                             <Link to="/" className="text-3xl font-black italic test text-brand">
-                                mishwari
+                                DeliGo
                             </Link>
                             <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 hover:bg-slate-100 rounded-xl text-slate-400">
                                 <X size={18} />

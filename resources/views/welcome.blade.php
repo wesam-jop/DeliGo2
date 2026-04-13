@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>mishwari</title>
+    <title>DeliGo</title>
     <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
     
     <!-- Google Fonts: Outfit & Inter -->
